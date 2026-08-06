@@ -1,0 +1,215 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Touch-first sizing. Desktop stays visually dense; on touch devices (phones,
+   tablets, touchscreen laptops) controls grow to a ~44px hit area per the
+   platform HIGs. Use as `coarse:size-11`. */
+@custom-variant coarse (@media (pointer: coarse));
+
+/* iOS Safari zooms the whole page when a focused field's text is under 16px.
+   The field utilities carry `md:text-sm`, which is width-based and so still
+   applies on a 768px tablet — a class selector we can only beat with
+   !important. Scoped to text-entry fields on touch pointers only. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-plex-mono);
+  --font-heading: var(--font-inter-tight);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-blue: var(--brand-blue);
+  --color-brand: var(--primary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* ── DataDart 2.0 design tokens (Requirements Spec, Appendix A) ──────── */
+  --navy-900: #14142b; /* app header, dark panels, primary text */
+  --brand-purple: #8e2de2; /* Purple 600 — brand accent, White Glove identity */
+  --brand-blue: #4361ee; /* Blue 600 — links, secondary accent */
+  --gradient-brand: linear-gradient(90deg, #8e2de2, #4361ee);
+
+  --background: #eef0fb; /* Surface */
+  --foreground: #14142b;
+  --card: #ffffff;
+  --card-foreground: #14142b;
+  --popover: #ffffff;
+  --popover-foreground: #14142b;
+  --primary: #6c3fe6; /* gradient midpoint — for solid accents/links */
+  --primary-foreground: #ffffff;
+  --secondary: #e8eafa;
+  --secondary-foreground: #3a3f58;
+  --muted: #f2f4fb;
+  --muted-foreground: #6b7280; /* data labels */
+  --accent: #f3e8fd;
+  --accent-foreground: #6d21b5;
+  --destructive: #dc2626;
+  --success: #16a34a;
+  --warning: #f59e0b; /* also the "live stage" colour */
+  --info: #38bdf8; /* in-transit */
+  --border: #e1e4f2;
+  --input: #d5d9ee;
+  --ring: color-mix(in oklab, #8e2de2 55%, transparent);
+  --chart-1: #8e2de2;
+  --chart-2: #4361ee;
+  --chart-3: #16a34a;
+  --chart-4: #f59e0b;
+  --chart-5: #6b7280;
+  --radius: 0.875rem; /* 14px cards */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #14142b;
+  --sidebar-primary: #6c3fe6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f3e8fd;
+  --sidebar-accent-foreground: #6d21b5;
+  --sidebar-border: #e1e4f2;
+  --sidebar-ring: color-mix(in oklab, #8e2de2 55%, transparent);
+}
+
+/* Dark mode — our design IP, tuned to the 2.0 navy/purple/blue token family. */
+.dark {
+  --background: #0c0c1a;
+  --foreground: #f0f1f9;
+  --card: #14142b; /* Navy 900 as the card surface */
+  --card-foreground: #f0f1f9;
+  --popover: #191934;
+  --popover-foreground: #f0f1f9;
+  --primary: #a56dff;
+  --primary-foreground: #0c0c1a;
+  --secondary: #212145;
+  --secondary-foreground: #c9cbe6;
+  --muted: #1c1c38;
+  --muted-foreground: #979ab0;
+  --accent: #26194a;
+  --accent-foreground: #d3b8ff;
+  --destructive: #f87171;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --info: #7dd3fc;
+  --border: rgb(255 255 255 / 10%);
+  --input: rgb(255 255 255 / 15%);
+  --ring: color-mix(in oklab, #a56dff 55%, transparent);
+  --chart-1: #a56dff;
+  --chart-2: #7089f5;
+  --chart-3: #4ade80;
+  --chart-4: #fbbf24;
+  --chart-5: #9797b0;
+  --sidebar: #14142b;
+  --sidebar-foreground: #f0f1f9;
+  --sidebar-primary: #a56dff;
+  --sidebar-primary-foreground: #0c0c1a;
+  --sidebar-accent: #26194a;
+  --sidebar-accent-foreground: #d3b8ff;
+  --sidebar-border: rgb(255 255 255 / 10%);
+  --sidebar-ring: color-mix(in oklab, #a56dff 55%, transparent);
+}
+
+@layer base {
+  /* Plain CSS rather than @apply — same output, and it keeps editors that
+     don't speak Tailwind v4 from flagging these as unknown at-rules. */
+  * {
+    border-color: var(--border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "tnum";
+  }
+  /* One typeface family everywhere — guards against any base stylesheet
+     pointing headings at an unset --font-heading variable. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--brand-purple) 25%, transparent);
+  }
+}
+
+
+/* Slim, theme-aware scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent)
+    transparent;
+}
+
+/* Respect reduced motion globally */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Imported LAST, deliberately.
+
+   Every rule in tokens.css used to carry `[data-mode="advanced"]` and so
+   outranked anything here on specificity alone. Unscoped, the two files
+   compete at 0,1,0 — so cascade order is now the only thing deciding, and it
+   has to resolve in tokens.css's favour.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@import "./tokens.css";
