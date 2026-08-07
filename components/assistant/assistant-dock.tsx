@@ -344,13 +344,27 @@ export function AssistantDock() {
             transition={{ duration: 0.38, ease: EASE_ADV }}
             className="pointer-events-auto relative w-[21.5rem] max-w-[calc(100vw-2.5rem)]"
           >
-            {/* A gradient hairline, drawn as a 1px inset rather than a border,
-                so the edge can carry the brand ramp. */}
-            <div className="rounded-2xl bg-[linear-gradient(135deg,color-mix(in_oklab,var(--plasma)_65%,transparent),color-mix(in_oklab,var(--cyo)_38%,transparent)_55%,var(--hair))] p-px shadow-[0_20px_48px_-20px_rgb(0_0_0/0.75)]">
+            {/*
+              A gradient hairline, drawn as a 1px inset rather than a border, so
+              the edge can carry the brand ramp.
+
+              The two radii are locked to one number with the inner exactly 1px
+              tighter, because that is the only relationship that makes the inset
+              read as a hairline. They were `rounded-2xl` (27.36px) outside and
+              `--radius + 0.25rem` (19.2px) inside: an 8px mismatch, which left
+              the ramp running straight past all four corners as bare wedges
+              while the panel curved away from it.
+
+              The panel is opaque for the same reason. At 95% the ramp bled
+              through the whole face as a violet haze, so the "hairline" was
+              really a wash with a bright edge — and a notification that floats
+              over arbitrary content should be solid anyway.
+            */}
+            <div className="rounded-[1.15rem] bg-[linear-gradient(135deg,color-mix(in_oklab,var(--plasma)_65%,transparent),color-mix(in_oklab,var(--cyo)_38%,transparent)_55%,var(--hair))] p-px shadow-[0_20px_48px_-20px_rgb(0_0_0/0.75)]">
               <button
                 type="button"
                 onClick={openDock}
-                className="group flex w-full items-center gap-3 rounded-[calc(var(--radius)+0.25rem)] bg-canvas/95 px-3.5 py-3 text-left backdrop-blur-xl transition-colors hover:bg-elev/95"
+                className="group flex w-full items-center gap-3 rounded-[calc(1.15rem-1px)] bg-elev px-3.5 py-3 text-left transition-colors hover:bg-sunk"
               >
                 <span className="relative grid size-10 shrink-0 place-items-center">
                   <span
