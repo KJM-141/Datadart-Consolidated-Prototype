@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { Maximize2 } from "lucide-react";
 import worldGeo from "@/lib/world-geo.json";
 import { MAP, arcPath, project } from "@/lib/map-projection";
+import { ENDPOINT_STYLE, ROUTE_STYLE, type Emphasis } from "@/lib/map-style";
 import { MapDialog } from "./map-dialog";
 import { cn } from "@/lib/utils";
 import { useSafeReducedMotion } from "@/lib/advanced-motion";
@@ -124,61 +125,72 @@ export function WorldMap({
         </defs>
 
         {/* graticule */}
-        <path d={graticule} stroke="#ffffff" strokeOpacity="0.04" strokeWidth="0.7" fill="none" />
+        <path d={graticule} stroke="#ffffff" strokeOpacity="0.055" strokeWidth="0.7" fill="none" />
 
-        {/* real country geometry */}
+        {/* Real country geometry. Borders carry more weight than they used to —
+            at 0.5 opacity the continents read as one undifferentiated mass, and
+            "which country is that lane landing in" is the question the map
+            exists to answer. */}
         <path d={LAND} fill={`url(#land-${uid})`} stroke="none" />
         <path
           d={BORDERS}
           fill="none"
-          stroke="#4a4a80"
-          strokeOpacity="0.5"
-          strokeWidth={compact ? 0.5 : 0.6}
+          stroke="#5f5f9e"
+          strokeOpacity="0.78"
+          strokeWidth={compact ? 0.6 : 0.75}
         />
 
         {routes.map((r, i) => {
           const d = arcPath(r.from, r.to);
           const [fx, fy] = project(r.from);
           const [tx, ty] = project(r.to);
-          const emph = r.emphasis ?? "mid";
-          const alpha = emph === "high" ? 1 : emph === "mid" ? 0.62 : 0.34;
-          const live = emph !== "low";
-          const dur = emph === "high" ? 3.0 : 4.4;
+          const emph: Emphasis = r.emphasis ?? "mid";
+          const style = ROUTE_STYLE[emph];
+          const stroke = style.gradient ? `url(#route-${uid})` : style.color;
+          const active = emph === "high";
 
           return (
             <g key={r.id}>
+              {/* Casing: a dark, slightly wider stroke under the lane so it
+                  stays readable where it crosses a landmass. */}
               <path
                 d={d}
                 fill="none"
-                stroke={`url(#route-${uid})`}
-                strokeOpacity={alpha * 0.3}
-                strokeWidth="1.6"
+                stroke={ENDPOINT_STYLE.halo}
+                strokeOpacity={0.55}
+                strokeWidth={style.width + 1.6}
+                strokeLinecap="round"
               />
               <motion.path
                 d={d}
                 fill="none"
-                stroke={`url(#route-${uid})`}
-                strokeOpacity={alpha}
-                strokeWidth="1.8"
+                stroke={stroke}
+                strokeOpacity={style.opacity}
+                strokeWidth={style.width}
                 strokeLinecap="round"
+                strokeDasharray={style.dash}
                 initial={reduce ? undefined : { pathLength: 0, opacity: 0 }}
-                animate={reduce ? undefined : { pathLength: 1, opacity: alpha }}
+                animate={reduce ? undefined : { pathLength: 1, opacity: style.opacity }}
                 transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 * i }}
-                className={live && !reduce ? "route-dash" : undefined}
+                className={active && !reduce ? "route-dash" : undefined}
               />
-              {live && !reduce && (
-                <circle r={emph === "high" ? 3.1 : 2.4} fill="#fff">
-                  <animateMotion dur={`${dur}s`} repeatCount="indefinite" path={d} />
+              {style.packet && !reduce && (
+                <circle r={style.packet.r} fill="#fff">
+                  <animateMotion
+                    dur={`${style.packet.seconds}s`}
+                    repeatCount="indefinite"
+                    path={d}
+                  />
                 </circle>
               )}
 
-              <Endpoint x={fx} y={fy} uid={uid} active={emph === "high"} reduce={!!reduce} />
-              <Endpoint x={tx} y={ty} uid={uid} active={emph === "high"} reduce={!!reduce} delay={1} />
+              <Endpoint x={fx} y={fy} uid={uid} active={active} reduce={!!reduce} />
+              <Endpoint x={tx} y={ty} uid={uid} active={active} reduce={!!reduce} delay={1} />
 
-              {(labelMode === "all" || (labelMode === "active" && emph === "high")) && (
+              {(labelMode === "all" || (labelMode === "active" && active)) && (
                 <>
-                  <MapLabel x={fx} y={fy} text={r.fromLabel} active={emph === "high"} />
-                  <MapLabel x={tx} y={ty} text={r.toLabel} active={emph === "high"} place="below" />
+                  <MapLabel x={fx} y={fy} text={r.fromLabel} active={active} />
+                  <MapLabel x={tx} y={ty} text={r.toLabel} active={active} place="below" />
                 </>
               )}
             </g>
@@ -233,8 +245,24 @@ function Endpoint({
           )}
         </circle>
       )}
-      <circle cx={x} cy={y} r={active ? 3 : 2.3} fill={active ? "#e6e0ff" : "#9a9ad0"} />
-      <circle cx={x} cy={y} r={active ? 3 : 2.3} fill="none" stroke="#0a0a1a" strokeWidth="0.6" />
+      {/* Keyline first, node on top: a 1px ring is the difference between a
+          city marker and a speck of noise on the coastline behind it. */}
+      <circle
+        cx={x}
+        cy={y}
+        r={(active ? ENDPOINT_STYLE.active.r : ENDPOINT_STYLE.idle.r) + 0.9}
+        fill={ENDPOINT_STYLE.halo}
+        fillOpacity={0.75}
+      />
+      <circle
+        cx={x}
+        cy={y}
+        r={active ? ENDPOINT_STYLE.active.r : ENDPOINT_STYLE.idle.r}
+        fill={active ? ENDPOINT_STYLE.active.fill : ENDPOINT_STYLE.idle.fill}
+        stroke={active ? "#fff" : "#c9c9ec"}
+        strokeOpacity={active ? 0.9 : 0.45}
+        strokeWidth="0.7"
+      />
     </g>
   );
 }

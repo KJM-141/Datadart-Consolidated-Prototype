@@ -1,13 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Copy, Lock, PencilLine } from "lucide-react";
 import { toast } from "sonner";
 import { EstimateCard } from "@/components/pricing/estimate-card";
-import { fmtRange, type Estimate } from "@/lib/pricing";
+import { SubscriptionPanel } from "@/components/intake/subscription-panel";
+import { Segmented } from "@/components/shared/segmented";
+import { fmtRange, fmtUSD, type Estimate } from "@/lib/pricing";
 import { formatHours } from "@/lib/sizer-engine";
-import type { TransferFacts } from "@/lib/types";
+import { recommendPlan } from "@/lib/plan-recommendation";
+import type { Cadence, TransferFacts } from "@/lib/types";
+import { EASE_ADV } from "@/lib/advanced-motion";
 import { cn } from "@/lib/utils";
+
+/**
+ * The panel has two halves because the conversation can end in two different
+ * products — a single shipment, or a rental that repeats. They were briefly one
+ * scrolling column with the plan appended to the bottom, which buried the
+ * subscription under the thing it was an alternative to.
+ */
+const TABS = ["transfer", "subscription"] as const;
+type Tab = (typeof TABS)[number];
+const TAB_LABELS: Record<Tab, string> = {
+  transfer: "Transfer",
+  subscription: "Subscription",
+};
 
 interface Row {
   key: keyof TransferFacts | "estimate";
@@ -29,6 +47,7 @@ export function TransferSummary({
   displayId,
   estimate,
   onEdit,
+  onCadence,
   onRequestProposal,
   className,
 }: {
@@ -36,9 +55,13 @@ export function TransferSummary({
   displayId: string;
   estimate?: Estimate;
   onEdit: (key: keyof TransferFacts) => void;
+  /** Answering the cadence from the panel replies in the conversation. */
+  onCadence: (cadence: Cadence) => void;
   onRequestProposal: () => void;
   className?: string;
 }) {
+  const [tab, setTab] = useState<Tab>("transfer");
+
   const rows: Row[] = [
     {
       key: "sizeTB",
@@ -78,15 +101,30 @@ export function TransferSummary({
       hint: "White Glove or self-managed?",
     },
     { key: "timeline", label: "Timeline", value: facts.timeline },
+    {
+      key: "frequency",
+      label: "How often",
+      value: facts.frequency,
+      hint: "One-off, or does this repeat?",
+    },
     { key: "compliance", label: "Compliance needs", value: facts.compliance },
   ];
 
+  // A recurring move is a rental, not an order. Derived here only to badge the
+  // tab — the panel itself re-derives from the same inputs.
+  const plan = estimate ? recommendPlan(estimate, facts.frequency) : null;
+
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-bold uppercase tracking-[0.12em]">
-          Transfer summary
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Segmented
+          options={TABS}
+          value={tab}
+          onChange={setTab}
+          labels={TAB_LABELS}
+          size="sm"
+          aria-label="Summary view"
+        />
         <button
           type="button"
           onClick={() => {
@@ -100,6 +138,70 @@ export function TransferSummary({
         </button>
       </div>
 
+      {/* A live plan the reader cannot see because they are on the other tab is
+          the one thing this split can get wrong. */}
+      {plan && tab === "transfer" && (
+        <button
+          type="button"
+          onClick={() => setTab("subscription")}
+          className="flex items-center gap-2 rounded-lg border border-dashed bg-card px-3 py-2 text-left text-[11.5px] transition-colors hover:bg-accent/40"
+        >
+          <span className="size-1.5 shrink-0 rounded-full plasma-fill" />
+          <span className="min-w-0 flex-1 text-muted-foreground">
+            {plan.cadence} plan ready —{" "}
+            <span className="font-semibold text-foreground">
+              {fmtUSD(plan.monthlyTotal)}/mo
+            </span>
+          </span>
+          <span className="shrink-0 font-semibold text-(--plasma)">View</span>
+        </button>
+      )}
+
+      {tab === "subscription" ? (
+        <motion.div
+          key="subscription"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: EASE_ADV }}
+        >
+          <SubscriptionPanel
+            facts={facts}
+            estimate={estimate}
+            onCadence={onCadence}
+          />
+        </motion.div>
+      ) : (
+        <TransferTab
+          rows={rows}
+          estimate={estimate}
+          onEdit={onEdit}
+          onRequestProposal={onRequestProposal}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── The transfer half ──────────────────────────────────────────────────── */
+
+function TransferTab({
+  rows,
+  estimate,
+  onEdit,
+  onRequestProposal,
+}: {
+  rows: Row[];
+  estimate?: Estimate;
+  onEdit: (key: keyof TransferFacts) => void;
+  onRequestProposal: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: EASE_ADV }}
+      className="flex flex-col gap-3"
+    >
       <div className="space-y-2">
         {rows.map((row) => {
           const filled = Boolean(row.value);
@@ -191,6 +293,6 @@ export function TransferSummary({
           Estimate shown before any contact details are requested.
         </p>
       )}
-    </div>
+    </motion.div>
   );
 }

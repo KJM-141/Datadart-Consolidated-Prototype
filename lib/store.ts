@@ -18,6 +18,9 @@ import {
 } from "./demo-data";
 import { orderFromConversation } from "./conversation-order";
 
+/** Which of the two dashboard surfaces the overview route is showing. */
+export type DashboardView = "guided" | "dashboard";
+
 /** How much the Ultra agent is allowed to decide on your behalf. */
 interface AppState {
   signedIn: boolean;
@@ -27,6 +30,19 @@ interface AppState {
   conversations: ConversationSession[];
   cart: CartItem[];
 
+  /** Right-rail sections the user has folded away, keyed by RailSection id.
+   *  Persisted: a panel you closed should stay closed on the next visit. */
+  railCollapsed: Record<string, boolean>;
+  /** Overview route surface. Defaults to the dashboard for everyone; the
+   *  guided tour is always one toggle away rather than gated on being new. */
+  dashboardView: DashboardView;
+  /** How many times the floating assistant has offered help unprompted. Capped
+   *  so the nudge is a courtesy rather than a nag. */
+  assistantNudgeSeen: number;
+
+  toggleRailSection: (id: string) => void;
+  setDashboardView: (view: DashboardView) => void;
+  noteAssistantNudge: () => void;
 
   signIn: (email: string) => void;
   signOut: () => void;
@@ -76,6 +92,17 @@ export const useAppStore = create<AppState>()(
       conversations: DEMO_CONVERSATIONS,
       cart: [],
 
+      railCollapsed: {},
+      dashboardView: "dashboard",
+      assistantNudgeSeen: 0,
+
+      toggleRailSection: (id) =>
+        set((s) => ({
+          railCollapsed: { ...s.railCollapsed, [id]: !s.railCollapsed[id] },
+        })),
+      setDashboardView: (dashboardView) => set({ dashboardView }),
+      noteAssistantNudge: () =>
+        set((s) => ({ assistantNudgeSeen: s.assistantNudgeSeen + 1 })),
 
       signIn: (email) =>
         set((s) => ({
@@ -163,10 +190,10 @@ export const useAppStore = create<AppState>()(
     {
       name: "datadart-prototype",
       // v2 introduced the 2.0 order model, v3 the persisted Conversations
-      // queue, v4 the Ultra agentic state. Older payloads carry shapes we
-      // can't render, so we drop the stale records and reseed rather than show
-      // broken rows.
-      version: 4,
+      // queue, v4 the Ultra agentic state, v5 the rail/dashboard/assistant UI
+      // preferences. Older payloads carry shapes we can't render, so we drop
+      // the stale records and reseed rather than show broken rows.
+      version: 5,
       migrate: (persisted) => {
         const prev = (persisted ?? {}) as Partial<AppState>;
         return {
@@ -175,6 +202,12 @@ export const useAppStore = create<AppState>()(
           subscriptions: DEMO_SUBSCRIPTIONS,
           conversations: DEMO_CONVERSATIONS,
           cart: [],
+          // Spelled out rather than left to the `...prev` spread: persist's
+          // merge is a shallow overwrite, so a pre-v5 payload would otherwise
+          // leave these `undefined` and every read would have to guard.
+          railCollapsed: prev.railCollapsed ?? {},
+          dashboardView: prev.dashboardView ?? "dashboard",
+          assistantNudgeSeen: prev.assistantNudgeSeen ?? 0,
         } as AppState;
       },
     },

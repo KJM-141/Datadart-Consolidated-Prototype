@@ -29,7 +29,3 @@ export function arcPath(
   const my = (y1 + y2) / 2 - l;
   return `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`;
 }
-
-export function emphasisAlpha(emph: "high" | "mid" | "low"): number {
-  return emph === "high" ? 1 : emph === "mid" ? 0.62 : 0.34;
-}

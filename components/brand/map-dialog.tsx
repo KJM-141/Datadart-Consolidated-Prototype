@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import {  } from "motion/react";
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { MAP, arcPath, emphasisAlpha, project } from "@/lib/map-projection";
+import { MAP, arcPath, project } from "@/lib/map-projection";
+import { ENDPOINT_STYLE, ROUTE_STYLE, type Emphasis } from "@/lib/map-style";
+import { MapLegend } from "./map-legend";
 import type { MapRoute } from "./world-map";
 import { cn } from "@/lib/utils";
 import { useSafeReducedMotion } from "@/lib/advanced-motion";
@@ -188,44 +189,67 @@ export function MapDialog({
               </text>
             )}
 
+            {/* Same three styles as the panel map, read from `lib/map-style`,
+                so zooming in never changes what a lane means. */}
             {routes.map((r) => {
               const d = arcPath(r.from, r.to);
-              const emph = r.emphasis ?? "mid";
-              const alpha = emphasisAlpha(emph);
-              const live = emph !== "low";
+              const emph: Emphasis = r.emphasis ?? "mid";
+              const s = ROUTE_STYLE[emph];
               return (
                 <g key={r.id}>
-                  <path d={d} fill="none" stroke="url(#mdRoute)" strokeOpacity={alpha * 0.28} strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
                   <path
                     d={d}
                     fill="none"
-                    stroke="url(#mdRoute)"
-                    strokeOpacity={alpha}
-                    strokeWidth={1.8}
+                    stroke={ENDPOINT_STYLE.halo}
+                    strokeOpacity={0.55}
+                    strokeWidth={s.width + 1.6}
                     strokeLinecap="round"
                     vectorEffect="non-scaling-stroke"
-                    className={live && !reduce ? "route-dash" : undefined}
                   />
-                  {live && !reduce && (
-                    <circle r={2.6} fill="#fff">
-                      <animateMotion dur={`${emph === "high" ? 3 : 4.4}s`} repeatCount="indefinite" path={d} />
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={s.gradient ? "url(#mdRoute)" : s.color}
+                    strokeOpacity={s.opacity}
+                    strokeWidth={s.width}
+                    strokeDasharray={s.dash}
+                    strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
+                    className={emph === "high" && !reduce ? "route-dash" : undefined}
+                  />
+                  {s.packet && !reduce && (
+                    <circle r={s.packet.r} fill="#fff">
+                      <animateMotion dur={`${s.packet.seconds}s`} repeatCount="indefinite" path={d} />
                     </circle>
                   )}
                 </g>
               );
             })}
 
-            {markers.map((m, i) => (
-              <g key={i}>
-                {m.active && (
-                  <circle cx={m.x} cy={m.y} r={7} fill="url(#mdGlow)">
-                    {!reduce && <animate attributeName="r" values="4;10;4" dur="2.4s" repeatCount="indefinite" />}
-                  </circle>
-                )}
-                <circle cx={m.x} cy={m.y} r={2.4} fill={m.active ? "#e6e0ff" : "#9a9ad0"} stroke="#0a0a1a" strokeWidth={0.5} vectorEffect="non-scaling-stroke" />
-                <MapLabel x={m.x} y={m.y} text={m.label} active={m.active} />
-              </g>
-            ))}
+            {markers.map((m, i) => {
+              const node = m.active ? ENDPOINT_STYLE.active : ENDPOINT_STYLE.idle;
+              return (
+                <g key={i}>
+                  {m.active && (
+                    <circle cx={m.x} cy={m.y} r={7} fill="url(#mdGlow)">
+                      {!reduce && <animate attributeName="r" values="4;10;4" dur="2.4s" repeatCount="indefinite" />}
+                    </circle>
+                  )}
+                  <circle cx={m.x} cy={m.y} r={node.r + 0.9} fill={ENDPOINT_STYLE.halo} fillOpacity={0.75} />
+                  <circle
+                    cx={m.x}
+                    cy={m.y}
+                    r={node.r}
+                    fill={node.fill}
+                    stroke={m.active ? "#fff" : "#c9c9ec"}
+                    strokeOpacity={m.active ? 0.9 : 0.45}
+                    strokeWidth={0.6}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <MapLabel x={m.x} y={m.y} text={m.label} active={m.active} />
+                </g>
+              );
+            })}
           </svg>
 
           {/* zoom controls */}
@@ -241,12 +265,10 @@ export function MapDialog({
             </button>
           </div>
 
-          {/* legend */}
-          <div className="absolute bottom-4 left-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border bg-card/90 px-3 py-2 text-[11px] shadow-lg backdrop-blur">
-            <LegendDot className="bg-[#5c8dff]" label="In transit" />
-            <LegendDot className="bg-indigo-400" label="In progress" />
-            <LegendDot className="bg-muted-foreground" label="Requested / closed" />
-          </div>
+          {/* The key, drawn from the same style table the lanes above are
+              stroked with — the previous version keyed three flat dots against
+              three gradient dashes and matched none of them. */}
+          <MapLegend className="absolute bottom-4 left-4 max-w-[min(38rem,calc(100%-6rem))] rounded-xl border bg-card/90 px-3 py-2 shadow-lg backdrop-blur" />
         </div>
       </DialogContent>
     </Dialog>
@@ -275,14 +297,5 @@ function MapLabel({ x, y, text, active }: { x: number; y: number; text: string; 
         {text}
       </text>
     </g>
-  );
-}
-
-function LegendDot({ className, label }: { className: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-      <span className={cn("size-2 rounded-full", className)} />
-      {label}
-    </span>
   );
 }

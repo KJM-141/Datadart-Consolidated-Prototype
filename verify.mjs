@@ -5,8 +5,16 @@ import { chromium } from "playwright";
  *   · the page itself never scrolls — each region scrolls independently
  *   · the rails hold their exact widths at desktop and disappear below their
  *     breakpoints rather than squeezing the working column
- *   · the right rail is never empty on any route
+ *   · the right rail belongs to the overview and is absent everywhere else
+ *
+ * That last clause used to read "the right rail is never empty on any route".
+ * The rail now follows `railVisible()` in lib/rail-spec.ts: every other route
+ * prints its own subject at full width, so a column restating it in miniature
+ * was duplication rather than support. The assertion inverted with it — on
+ * `/customer/` the rail must be seated and carry sections; anywhere else it
+ * must not exist, and the working column must take the space back.
  */
+const RAIL_ROUTE = "/customer/";
 const BASE = "http://127.0.0.1:4310";
 const ROUTES = [
   "/customer/", "/customer/history/", "/customer/hardware/",
@@ -50,18 +58,28 @@ for (const width of WIDTHS) {
         pageScrolls: document.documentElement.scrollHeight > window.innerHeight + 2,
         navW: vis(nav) ? Math.round(nav.getBoundingClientRect().width) : 0,
         railW: vis(rail) ? Math.round(rail.getBoundingClientRect().width) : 0,
+        // Mounted at all, at any width — the off-overview routes must not even
+        // render it into a sheet.
+        railPresent: !!rail,
         railSections: rail ? rail.querySelectorAll("section").length : 0,
         mainScrolls: main ? main.scrollHeight > main.clientHeight : false,
         bodyOverflowX: document.body.scrollWidth > window.innerWidth + 2,
       };
     });
 
+    const railExpected = r === RAIL_ROUTE;
+
     if (m.pageScrolls) problem(`${width} ${r} — the page scrolls; only regions should`);
     if (m.bodyOverflowX) problem(`${width} ${r} — horizontal overflow`);
     if (width >= 1280 && m.navW !== 256) problem(`${width} ${r} — nav is ${m.navW}px, expected 256`);
     if (width < 1024 && m.navW > 0) problem(`${width} ${r} — nav still seated at ${m.navW}px`);
-    if (width >= 1280 && m.railW !== 352) problem(`${width} ${r} — rail is ${m.railW}px, expected 352`);
-    if (width >= 1280 && m.railSections < 2) problem(`${width} ${r} — rail has ${m.railSections} sections`);
+
+    if (railExpected) {
+      if (width >= 1280 && m.railW !== 352) problem(`${width} ${r} — rail is ${m.railW}px, expected 352`);
+      if (width >= 1280 && m.railSections < 2) problem(`${width} ${r} — rail has ${m.railSections} sections`);
+    } else if (m.railPresent) {
+      problem(`${width} ${r} — rail is mounted off the overview`);
+    }
   }
 
   if (errs.length) problem(`${width} — ${[...new Set(errs)].slice(0, 2).join(" | ")}`);

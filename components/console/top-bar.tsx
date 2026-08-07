@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Gauge, Menu, PanelRight, Radio, Search } from "lucide-react";
-import { LiveDot } from "@/components/advanced/kit/hud";
+import { Menu, PanelRight, Search } from "lucide-react";
+import { StagePill } from "@/components/lifecycle/lifecycle-panel";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
-import { isActivePath, NAV_GROUPS, offNavTitle } from "@/lib/nav";
+import { isActivePath, NAV_GROUPS, offNavTitle, PATHS } from "@/lib/nav";
 import { useAppStore, useMounted } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +18,9 @@ import { cn } from "@/lib/utils";
  * inset from the viewport; here it is a structural rail with a hairline under
  * it, which is what lets the three columns below read as one frame.
  *
- * The three live figures are kept from the deck. They are the only numbers on
- * screen that are true regardless of which route you are on, which is exactly
- * what belongs in persistent chrome.
+ * The centre carries the pipeline in scope rather than the deck's three
+ * standing figures. Numbers that are true on every route are, by construction,
+ * numbers that tell you nothing about the route you are on.
  */
 export function TopBar({
   onOpenPalette,
@@ -29,18 +30,35 @@ export function TopBar({
 }: {
   onOpenPalette: () => void;
   onOpenNav: () => void;
-  onToggleRail: () => void;
+  /** Omitted on routes with no right rail — the trigger hides with it. */
+  onToggleRail?: () => void;
   className?: string;
 }) {
   const pathname = usePathname();
   const orders = useAppStore((s) => s.orders);
-  const subs = useAppStore((s) => s.subscriptions);
   const mounted = useMounted();
 
   const active = orders.filter((o) => !o.closed);
-  const inTransitTB = active
-    .filter((o) => ["Data Load", "Shipment", "DT2 Upload"].includes(o.stage))
-    .reduce((n, o) => n + o.volumeTB, 0);
+
+  /*
+    The pipeline the bar is about.
+    ───────────────────────────────────────────────────────────────────────
+    This slot used to hold three standing figures — active transfers, TB in
+    motion, subscriptions — which were true on every route and therefore told
+    you nothing about the one you were on.
+
+    It now tracks a transfer: the one named in the pathname if there is one,
+    otherwise the same "in focus" pick the overview makes — physically moving
+    first, then loading, then whatever is open. So walking from the dashboard
+    into a transfer keeps the bar on the same subject you clicked.
+  */
+  const routeId = pathname.split("/").filter(Boolean).pop();
+  const scoped =
+    active.find((o) => o.displayId === routeId) ??
+    orders.find((o) => o.displayId === routeId) ??
+    active.find((o) => o.stage === "Shipment") ??
+    active.find((o) => o.stage === "Data Load") ??
+    active[0];
 
   // Longest match wins: `/customer` is a prefix of every console route, so a
   // first-match search would label every page "Overview". Routes reachable
@@ -54,7 +72,7 @@ export function TopBar({
     offNavTitle(pathname);
 
   return (
-    <header className={cn("bg-canvas/72", className)} style={{ boxShadow: "var(--shadow-bar)" }}>
+    <header className={cn("bg-chrome", className)} style={{ boxShadow: "var(--shadow-bar)" }}>
       {/* Nav trigger only exists below lg, where the rail has become a sheet. */}
       <button
         type="button"
@@ -67,30 +85,24 @@ export function TopBar({
 
       <span className="truncate text-[13px] font-medium">{label}</span>
 
-      {/* The three figures that are true on every route. */}
-      <div className="hidden min-w-0 flex-1 items-center justify-center gap-7 lg:flex">
-        {mounted && (
-          <>
-            <Figure
-              icon={Activity}
-              value={String(active.length)}
-              unit={`active transfer${active.length === 1 ? "" : "s"}`}
-              live={active.length > 0}
-            />
-            <Divider />
-            <Figure
-              icon={Gauge}
-              value={inTransitTB.toLocaleString()}
-              unit="TB in motion"
-            />
-            <Divider />
-            <Figure
-              icon={Radio}
-              value={String(subs.filter((s) => s.status !== "Closed").length)}
-              unit="subscriptions"
-            />
-          </>
-        )}
+      {/* Where the pipeline in scope has got to, and a way into it. */}
+      <div className="hidden min-w-0 flex-1 items-center justify-center lg:flex">
+        {mounted &&
+          (scoped ? (
+            <Link
+              href={PATHS.transfer(scoped.displayId)}
+              className="group inline-flex min-w-0 items-center gap-2.5 rounded-full py-1 pl-1 pr-3 transition-colors hover:bg-accent"
+            >
+              <StagePill order={scoped} />
+              <span className="truncate font-mono text-[11px] text-ink-3 transition-colors group-hover:text-ink-2">
+                {scoped.displayId}
+              </span>
+            </Link>
+          ) : (
+            <span className="text-[12px] text-ink-3">
+              Nothing in flight — start a transfer to see it here
+            </span>
+          ))}
       </div>
       <div className="flex-1 lg:hidden" />
 
@@ -115,47 +127,24 @@ export function TopBar({
           <Search className="size-4.5" />
         </button>
 
-        {/* Below xl the rail is a sheet, so it needs a trigger of its own. */}
-        <button
-          type="button"
-          onClick={onToggleRail}
-          aria-label="Toggle panel"
-          className="grid size-9 place-items-center rounded-lg text-ink-2 transition-colors hover:bg-accent hover:text-ink xl:hidden"
-        >
-          <PanelRight className="size-4.5" />
-        </button>
+        {/* Below xl the rail is a sheet, so it needs a trigger of its own —
+            but only on the route that has a rail at all. */}
+        {onToggleRail && (
+          <button
+            type="button"
+            onClick={onToggleRail}
+            aria-label="Toggle panel"
+            className="grid size-9 place-items-center rounded-lg text-ink-2 transition-colors hover:bg-accent hover:text-ink xl:hidden"
+          >
+            <PanelRight className="size-4.5" />
+          </button>
+        )}
 
         <ThemeToggle />
         <UserMenu />
       </div>
     </header>
   );
-}
-
-/** Number first, unit second, both on one baseline. */
-function Figure({
-  icon: Icon,
-  value,
-  unit,
-  live,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: string;
-  unit: string;
-  live?: boolean;
-}) {
-  return (
-    <span className="flex items-baseline gap-2 whitespace-nowrap">
-      <Icon className="size-3.5 shrink-0 translate-y-0.5 text-ink-3" />
-      {live && <LiveDot />}
-      <span className="font-mono text-[13px] font-medium tabular-nums">{value}</span>
-      <span className="text-[11.5px] text-ink-2">{unit}</span>
-    </span>
-  );
-}
-
-function Divider() {
-  return <span aria-hidden className="h-3.5 w-px bg-hair" />;
 }
 
 /**

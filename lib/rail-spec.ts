@@ -5,66 +5,54 @@ import type { TransferOrder } from "./types";
 /**
  * ── What the right rail shows, and why ────────────────────────────────────
  *
- * A persistent 352px panel has to justify itself on every route or the layout
- * is worse than the centred column it replaced. So the rail has a contract:
+ * **The rail belongs to the overview, and to nothing else.**
  *
- *   · **Needs you** is always first, and is computed from the real order book —
- *     unsigned agreements, released-but-unsigned documents, unpaid milestones.
- *     If the console has one reason to exist, this is it.
- *   · A **route section** in the middle, which is the thing you would otherwise
- *     have had to navigate away to find.
- *   · **Assistant** is always last, docked rather than floating.
+ * It used to follow you onto every route, swapping its middle for whatever the
+ * pathname was about — custody on a transfer, the rate card on the sizer, the
+ * catalogue on hardware. The problem with that is what it did to the pages it
+ * was helping: each one already prints its own subject at full width, so the
+ * rail spent 352px restating it in miniature, and on a route like the transfer
+ * detail you read the same payment milestones twice, once in a panel and once
+ * in a column beside it.
  *
- * Because the first and last are unconditional, the rail is never empty — the
- * failure mode that would make the whole three-column layout feel like padding.
+ * Scoped to the overview, it becomes what it is good at — a standing readout
+ * next to a screen whose job is the whole book rather than one record:
  *
- * This module is pure. It decides *what* appears; `right-rail.tsx` renders it.
+ *   · **Cart** first, directly under the top bar: what you have open right now.
+ *   · **Needs you**, computed from the real order book — unsigned agreements,
+ *     released-but-unsigned documents, unpaid milestones. If the console has
+ *     one reason to exist, this is it.
+ *   · **Active transfers** and the **catalogue**, which is the thing the deck
+ *     used to make you navigate to.
+ *
+ * Everything the old route sections carried now lives on the page it describes:
+ * custody and progress in `components/lifecycle/lifecycle-panel.tsx`, payments
+ * and documents in their own panels on the transfer detail, renewals on
+ * Subscriptions, the account on Profile.
+ *
+ * This module is pure. It decides *what* appears; `right-rail.tsx` renders it,
+ * and `console-shell.tsx` asks `railVisible()` whether to mount it at all.
  */
 
-export type RailSection =
-  | "needs-you"
-  | "active"
-  | "alerts"
-  | "custody"
-  | "checkpoints"
-  | "payments"
-  | "documents"
-  | "product"
-  | "estimate"
-  | "draft"
-  | "renewals"
-  | "account"
-  | "assistant";
+export type RailSection = "cart" | "needs-you" | "active" | "product";
 
-/** Ordered, and always bracketed by the two permanent sections. */
-export function railSections(pathname: string): RailSection[] {
-  const middle = routeSections(pathname);
-  return ["needs-you", ...middle, "assistant"];
+const OVERVIEW_RAIL: RailSection[] = ["cart", "needs-you", "active", "product"];
+
+/**
+ * True only on the overview.
+ *
+ * Compared against a trailing-slash-stripped pathname because
+ * `trailingSlash: true` in next.config means the router reports "/customer/",
+ * and an exact match on "/customer" silently never fires — the same trap
+ * `isActivePath` documents in `lib/nav.ts`.
+ */
+export function railVisible(pathname: string): boolean {
+  const trim = (v: string) => (v.length > 1 ? v.replace(/\/+$/, "") : v);
+  return trim(pathname) === trim(PATHS.dashboard);
 }
 
-function routeSections(pathname: string): RailSection[] {
-  // Order matters: the product detail is a prefix-match on the hardware list.
-  if (pathname.startsWith(PATHS.product(""))) return ["product"];
-  if (pathname.startsWith(PATHS.hardware)) return ["product"];
-  if (pathname.startsWith(PATHS.transfer(""))) {
-    return ["custody", "checkpoints", "payments", "documents"];
-  }
-  if (pathname.startsWith(PATHS.transfers)) return ["active", "alerts"];
-  if (pathname.startsWith(PATHS.sizer)) return ["estimate"];
-  if (pathname.startsWith(PATHS.start)) return ["draft"];
-  if (pathname.startsWith(PATHS.conversations)) return ["draft"];
-  if (pathname.startsWith(PATHS.subscriptions)) return ["renewals"];
-  if (pathname.startsWith(PATHS.profile)) return ["account"];
-  if (pathname.startsWith(PATHS.checkout)) return ["estimate"];
-  // The dashboard, and anything unrecognised, gets the operational view plus
-  // the catalogue — the hardware tile used to sit in the centre column, where
-  // it was reachable from exactly one route. In the rail it is always there.
-  //
-  // Alert thresholds are deliberately *not* here. They are static configuration
-  // that never changes between visits, so on the busiest route they were a
-  // fourth panel of nothing-new pushing the live sections off-screen. They stay
-  // on the transfers route, where "what would page me" is the question at hand.
-  return ["active", "product"];
+export function railSections(pathname: string): RailSection[] {
+  return railVisible(pathname) ? OVERVIEW_RAIL : [];
 }
 
 /* ═══════════════════════════════ Needs you ═══════════════════════════════ */

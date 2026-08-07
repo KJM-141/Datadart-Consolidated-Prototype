@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
 } from "lucide-react";
 import { format } from "date-fns";
+import { GettingStarted } from "@/components/advanced/pages/getting-started";
+import { MapLegend } from "@/components/brand/map-legend";
+import { Segmented } from "@/components/shared/segmented";
 import { RoutePanel } from "@/components/console/map-panel";
 import { HoloPanel, PanelHead } from "@/components/advanced/kit/holo-panel";
 import {
   Eyebrow,
   HudLabel,
-  HudRule,
   LiveDot,
   MetricRing,
   Pill,
@@ -22,35 +24,74 @@ import { Counter } from "@/components/advanced/kit/text";
 import { StageBar } from "@/components/advanced/kit/stage-spine";
 import { STAGE_BLURB, STAGES, stageIndex } from "@/lib/lifecycle";
 import { fmtUSD } from "@/lib/pricing";
-import { useAppStore, useMounted } from "@/lib/store";
+import { PATHS } from "@/lib/nav";
+import { useAppStore, useMounted, type DashboardView } from "@/lib/store";
 import { ordersToRoutes } from "@/lib/routes";
 import { DEMO_ACTIVITY } from "@/lib/demo-data";
 import { bloomSoft, deckStagger, EASE_ADV, useSafeReducedMotion } from "@/lib/advanced-motion";
 import { cn } from "@/lib/utils";
 
+const VIEWS = ["guided", "dashboard"] as const;
+const VIEW_LABELS: Record<DashboardView, string> = {
+  guided: "Get started",
+  dashboard: "Dashboard",
+};
+
 /**
- * Mission Control — the Advanced dashboard.
+ * Variant *labels*, not style objects.
  *
- * Identical inputs to the Normal overview (same store selectors, same derived
- * figures, same destinations) presented as an instrument panel: gauge pods, a
- * scanning atlas, a lifecycle spine and a beam-linked activity timeline.
+ * `HoloPanel` carries `variants={bloom}` with no `animate` of its own, so it
+ * takes its state from the nearest ancestor that names one. A wrapper animating
+ * with plain objects halts that propagation: every panel resolved to
+ * `bloom.hidden` — opacity 0 — and had nothing to tell it to advance. The
+ * dashboard rendered fine on first paint and then vanished the moment you
+ * switched away and back, because only a remount re-applies `initial`.
+ */
+const pane: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.26,
+      ease: EASE_ADV,
+      staggerChildren: 0.055,
+      delayChildren: 0.04,
+    },
+  },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.18, ease: EASE_ADV } },
+};
+
+/**
+ * The overview route — two surfaces behind one toggle.
+ *
+ * *Dashboard* is Mission Control: identical inputs to the Normal overview (same
+ * store selectors, same derived figures, same destinations) presented as an
+ * instrument panel — gauge pods, a scanning atlas, a lifecycle spine and a
+ * beam-linked activity timeline.
+ *
+ * *Get started* is the same product explained rather than instrumented, for
+ * someone who has not used it before. An instrument panel tells you nothing
+ * until you know what the instruments are for, and a brand-new account sees a
+ * dashboard of someone else's demo data either way.
+ *
+ * The choice is manual and it persists. Deriving it from "has no orders" would
+ * make the tour unreachable the moment a single order exists, which in a
+ * prototype seeded with three of them means never.
  */
 export function DashboardAdvanced() {
   const profile = useAppStore((s) => s.profile);
-  const orders = useAppStore((s) => s.orders);
+  const view = useAppStore((s) => s.dashboardView);
+  const setDashboardView = useAppStore((s) => s.setDashboardView);
   const mounted = useMounted();
-  const reduce = useSafeReducedMotion();
-
-  const active = orders.filter((o) => !o.closed);
-  const routes = ordersToRoutes(active).slice(0, 5);
-  const focus =
-    active.find((o) => o.stage === "Shipment") ??
-    active.find((o) => o.stage === "Data Load") ??
-    active[0];
 
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  // Persisted state is not available during SSR, so the first paint is always
+  // the default view; the toggle settles once the store rehydrates.
+  const active: DashboardView = mounted ? view : "dashboard";
 
   return (
     <motion.div
@@ -61,40 +102,104 @@ export function DashboardAdvanced() {
     >
       {/* ══ Greeting ══════════════════════════════════════════════════ */}
       <motion.section variants={bloomSoft} className="relative">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-          <div className="min-w-0">
-            <Eyebrow>{format(new Date(), "EEEE, d MMMM yyyy")}</Eyebrow>
-            <h1 className="mt-2.5 text-[1.75rem] font-semibold leading-[1.12] sm:text-[2.125rem]">
-              {greeting}
-              {mounted && profile.firstName ? `, ${profile.firstName}` : ""}
-            </h1>
-          </div>
+        {/*
+          Suppressed in the guided view, which opens on a greeting of its own.
+          Two "Good afternoon, Demo" on one screen is the kind of thing nobody
+          reports and everybody notices — and the conversation wants the vertical
+          room more than the page furniture does.
+        */}
+        {active === "dashboard" && (
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+            <div className="min-w-0">
+              <Eyebrow>{format(new Date(), "EEEE, d MMMM yyyy")}</Eyebrow>
+              <h1 className="mt-2.5 text-[1.75rem] font-semibold leading-[1.12] sm:text-[2.125rem]">
+                {greeting}
+                {mounted && profile.firstName ? `, ${profile.firstName}` : ""}
+              </h1>
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href="/customer/start"
-              className="btn-plasma group inline-flex h-10 items-center gap-2 px-5 text-[13px] font-medium text-white"
-            >
-              Start a conversation
-              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/customer/sizer"
-              className="btn-ghost-hud inline-flex h-10 items-center px-5 text-[13px] font-medium"
-            >
-              Get an estimate
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={PATHS.start}
+                className="btn-plasma group inline-flex h-10 items-center gap-2 px-5 text-[13px] font-medium text-white"
+              >
+                Start a conversation
+                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href={PATHS.sizer}
+                className="btn-ghost-hud inline-flex h-10 items-center px-5 text-[13px] font-medium"
+              >
+                Get an estimate
+              </Link>
+            </div>
           </div>
+        )}
+
+        <div className={cn("border-b border-hair pb-3", active === "dashboard" && "mt-5")}>
+          <Segmented
+            options={VIEWS}
+            value={active}
+            onChange={setDashboardView}
+            labels={VIEW_LABELS}
+            size="sm"
+            aria-label="Overview layout"
+          />
         </div>
-        <HudRule className="mt-6" />
       </motion.section>
 
+      <AnimatePresence mode="wait" initial={false}>
+        {active === "guided" ? (
+          <motion.div
+            key="guided"
+            variants={pane}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+          >
+            <GettingStarted />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="dashboard"
+            variants={pane}
+            initial="hidden"
+            animate="show"
+            exit="exit"
+            className="space-y-4"
+          >
+            <DashboardBody />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* ── Mission Control ────────────────────────────────────────────────────── */
+
+function DashboardBody() {
+  const orders = useAppStore((s) => s.orders);
+  const reduce = useSafeReducedMotion();
+
+  const active = orders.filter((o) => !o.closed);
+  const routes = ordersToRoutes(active).slice(0, 5);
+  const focus =
+    active.find((o) => o.stage === "Shipment") ??
+    active.find((o) => o.stage === "Data Load") ??
+    active[0];
+
+  return (
+    <>
       {/* ══ Atlas + focus ═════════════════════════════════════════════ */}
       <div className="grid gap-3 sm:gap-4 xl:grid-cols-12">
         {/* atlas */}
+        {/* flex-col so the atlas absorbs the height the taller focus column
+            forces on it, instead of centring a fixed-height map inside it and
+            leaving a band of nothing above the legend. */}
         <HoloPanel
           scan
-          className="overflow-hidden p-0 xl:col-span-8"
+          className="flex flex-col overflow-hidden p-0 xl:col-span-8"
           variant="glass"
         >
           <div className="flex items-start justify-between gap-4 px-5 pb-4 pt-5">
@@ -109,18 +214,18 @@ export function DashboardAdvanced() {
               </h2>
             </div>
             <Link
-              href="/customer/history"
+              href={PATHS.transfers}
               className="inline-flex shrink-0 items-center gap-1 text-[12px] font-medium text-(--plasma) transition-opacity hover:opacity-75 coarse:min-h-11"
             >
               View orders <ArrowUpRight className="size-3.5" />
             </Link>
           </div>
 
-          <div className="relative px-3 pb-3">
-            <RoutePanel routes={routes} height={300} />
+          <div className="relative min-h-0 flex-1 px-3 pb-3">
+            <RoutePanel routes={routes} height={300} className="h-full" />
           </div>
 
-          {/* route legend */}
+          <MapLegend className="shrink-0 border-t border-hair px-5 py-3" />
         </HoloPanel>
 
         {/* focus capsule */}
@@ -241,7 +346,7 @@ export function DashboardAdvanced() {
               </ul>
 
               <Link
-                href={`/customer/history/${focus.displayId}`}
+                href={PATHS.transfer(focus.displayId)}
                 className="mt-auto inline-flex items-center gap-1.5 pt-5 text-[13px] font-medium text-(--plasma) hover:underline"
               >
                 Track this transfer <ArrowUpRight className="size-3.5" />
@@ -317,7 +422,7 @@ export function DashboardAdvanced() {
             Datasheets, whitepapers, blogs and videos — everything in one place.
           </p>
           <Link
-            href="/customer/resources"
+            href={PATHS.resources}
             className="mt-auto inline-flex items-center gap-1.5 pt-5 text-[13px] font-medium text-(--plasma) transition-colors hover:text-foreground coarse:min-h-11"
           >
             <BookOpen className="size-4" />
@@ -325,15 +430,6 @@ export function DashboardAdvanced() {
           </Link>
         </HoloPanel>
       </div>
-    </motion.div>
+    </>
   );
 }
-
-/* ── Telemetry pod ──────────────────────────────────────────────────────── */
-
-/**
- * One metric. Text block on the left reading top-down (label → figure →
- * context), gauge on the right, both centred against the same optical axis —
- * the first pass hung a three-line stack off a vertically-centred ring, which
- * never lined up with anything.
- */

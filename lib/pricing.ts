@@ -89,12 +89,23 @@ export interface Estimate {
 
 const round = (n: number, to: number) => Math.round(n / to) * to;
 
-function rentalRate(perUnitTB: number): number {
+/**
+ * USD per TB per rental month for a unit of this capacity.
+ *
+ * Exported because the subscription plan the assistant recommends has to be
+ * priced off the same tier table as the estimate it is derived from — a second
+ * rate table, or `Product.monthlyCost` (which is 0 for two of the three
+ * catalogue entries), would let the two quote different numbers for the same
+ * fleet.
+ */
+export function rentalRatePerTBMonth(perUnitTB: number): number {
   return (
     RATE_CARD.rentalPerTBMonth.find((t) => perUnitTB <= t.upTo)?.rate ??
     RATE_CARD.rentalPerTBMonth[RATE_CARD.rentalPerTBMonth.length - 1].rate
   );
 }
+
+const rentalRate = rentalRatePerTBMonth;
 
 /** Price a sizing produced by the engine. */
 export function priceSizing(

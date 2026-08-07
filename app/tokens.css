@@ -42,33 +42,46 @@
 
   /* Surface recipe. The edge is mostly neutral with a single violet hint at
      the top-left — a rainbow ring reads as decoration, this reads as glass. */
-  --holo-edge: rgb(23 20 48 / 12%);
-  --holo-edge-tint: color-mix(in oklab, #6d3ae8 22%, transparent);
+  --holo-edge: rgb(23 20 48 / 8%);
+  --holo-edge-tint: color-mix(in oklab, #6d3ae8 16%, transparent);
   --holo-glass: color-mix(in oklab, #ffffff 88%, transparent);
   --holo-inner: rgb(255 255 255 / 80%);
   --holo-shadow:
     0 1px 2px rgb(20 20 43 / 5%), 0 12px 28px -18px rgb(30 26 66 / 22%);
 
-  --background: #f4f4fa;
-  --foreground: #131228;
+  /*
+    Daybreak, softened.
+    ───────────────────────────────────────────────────────────────────────
+    The first cut ran #131228 body copy on #f4f4fa — around 15:1, roughly ink
+    on paper, which is far past AAA and reads as harsh on a screen rather than
+    as crisp. Every level has been pulled toward the middle: text off pure
+    near-black, the page off pure near-white, and the hairline lightened so a
+    dense console stops looking gridded.
+
+    Contrast is still comfortably AA at every pairing — body copy lands near
+    11:1 and the muted rank near 5:1. This is a softer *range*, not a weaker
+    one, and the dark theme is untouched.
+  */
+  --background: #f5f5fa;
+  --foreground: #262441;
   --card: #ffffff;
-  --card-foreground: #131228;
+  --card-foreground: #262441;
   --popover: #ffffff;
-  --popover-foreground: #131228;
+  --popover-foreground: #262441;
   --primary: #6d3ae8;
   --primary-foreground: #ffffff;
-  --secondary: #eaeaf5;
-  --secondary-foreground: #363152;
-  --muted: #f1f1f8;
-  --muted-foreground: #6a6a87;
-  --accent: #efe9fd;
-  --accent-foreground: #5322a8;
-  --destructive: #d92548;
-  --success: #0f855c;
-  --warning: #b8730b;
-  --info: #0e7f96;
-  --border: #e4e3ef;
-  --input: #d6d5e6;
+  --secondary: #ecebf6;
+  --secondary-foreground: #423d5f;
+  --muted: #f2f2f9;
+  --muted-foreground: #73738f;
+  --accent: #f0ebfd;
+  --accent-foreground: #5b2cae;
+  --destructive: #d0304f;
+  --success: #17825e;
+  --warning: #ad7310;
+  --info: #157c91;
+  --border: #e9e8f3;
+  --input: #dcdbea;
   --ring: color-mix(in oklab, #6d3ae8 48%, transparent);
   --radius: 0.95rem;
   --sidebar: #ffffff;
@@ -404,6 +417,50 @@ h2 {
 
   .plasma-fill {
     background-image: var(--gradient-plasma);
+  }
+
+  /*
+    Product stage — the plinth a hardware render stands on.
+    ─────────────────────────────────────────────────────────────────────────
+    `productStage()` has named these since the catalogue was written and
+    neither was ever declared, so every device sat on whatever card was behind
+    it.
+
+    A shallow radial pool rather than a flat fill: a rugged black case on a flat
+    dark panel has no edge at all, and a flat light panel punches a white hole
+    in a dark console. The pool gives the object a floor in both themes.
+
+    `product-stage-dark` is for renders shot on black — they need the pool
+    inverted or the case disappears into it.
+  */
+  .product-stage {
+    background:
+      radial-gradient(
+        68% 58% at 50% 42%,
+        color-mix(in oklab, var(--plasma) 7%, transparent),
+        transparent 72%
+      ),
+      var(--muted);
+  }
+
+  .product-stage-dark {
+    background:
+      radial-gradient(
+        68% 58% at 50% 42%,
+        color-mix(in oklab, var(--cyo) 9%, transparent),
+        transparent 72%
+      ),
+      color-mix(in oklab, var(--foreground) 8%, var(--muted));
+  }
+
+  .dark .product-stage-dark {
+    background:
+      radial-gradient(
+        68% 58% at 50% 42%,
+        color-mix(in oklab, var(--cyo) 12%, transparent),
+        transparent 72%
+      ),
+      #0b0b18;
   }
 
   /* Gradient numerals — the derived figures in the estimate and checkout
@@ -847,9 +904,30 @@ textarea,
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
+  /*
+    ── The surface ladder ─────────────────────────────────────────────────
+    Four rungs, each a few percent apart, ordered lightest to deepest:
+
+      elev    #ffffff   cards and panels — the things you read
+      canvas  #f5f5fa   the working column
+      chrome  #eeedf7   nav rail, right rail, top bar — the frame
+      sunk    #e6e5f1   section lids, wells, table headers
+
+    `chrome` exists because on the night all three regions painted
+    `bg-canvas/72` and the aurora behind them supplied the separation. On paper
+    there is no aurora, so 72% of the page colour *is* the page colour, and the
+    two rails dissolved into the column between them — one flat sheet of white
+    with a nav menu floating on it.
+
+    The steps are deliberately small. The frame should be legible as a frame,
+    not striped.
+  */
   --canvas: var(--background);
   --elev: var(--card);
-  --sunk: color-mix(in oklab, var(--background) 92%, black);
+  --sunk: #e6e5f1;
+  --chrome: #eeedf7;
+  /* Structural column edges carry more than a hairline between rows does. */
+  --chrome-edge: #dbd9ea;
   --hair: var(--border);
   --line-soft: color-mix(in oklab, var(--border) 55%, transparent);
   --ink: var(--foreground);
@@ -860,15 +938,28 @@ textarea,
   --seal: var(--plasma);
 
   --shadow-bar: 0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent);
+
   --shadow-card: 0 1px 2px rgb(0 0 0 / 22%), 0 1px 3px rgb(0 0 0 / 14%);
   --shadow-lift:
     0 4px 8px -3px rgb(0 0 0 / 30%), 0 20px 48px -18px rgb(0 0 0 / 46%);
+}
+
+/* The night keeps its original recipe. A recessed surface there is the canvas
+   darkened toward black, and the frame stays translucent so the aurora — which
+   is doing the separating — carries on showing through it. */
+.dark,
+.on-dark {
+  --sunk: color-mix(in oklab, var(--background) 92%, black);
+  --chrome: color-mix(in oklab, var(--canvas) 72%, transparent);
+  --chrome-edge: var(--hair);
 }
 
 @theme inline {
   --color-canvas: var(--canvas);
   --color-elev: var(--elev);
   --color-sunk: var(--sunk);
+  --color-chrome: var(--chrome);
+  --color-chrome-edge: var(--chrome-edge);
   --color-hair: var(--hair);
   --color-line-soft: var(--line-soft);
   --color-ink: var(--ink);

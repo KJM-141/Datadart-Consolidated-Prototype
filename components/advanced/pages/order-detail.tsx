@@ -32,7 +32,10 @@ import {
   type Tone,
 } from "@/components/advanced/kit/hud";
 import { Counter } from "@/components/advanced/kit/text";
-import { StageSpine } from "@/components/advanced/kit/stage-spine";
+import {
+  LifecyclePanel,
+  StagePill,
+} from "@/components/lifecycle/lifecycle-panel";
 import { Spotlight } from "@/components/advanced/kit/interactions";
 import { orderToRoute } from "@/lib/routes";
 import { STAGE_BLURB, STAGES, stageIndex } from "@/lib/lifecycle";
@@ -134,9 +137,10 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
               >
                 <Copy className="size-3" />
               </button>
-              <Pill tone={order.closed ? "muted" : "warning"}>
-                {order.closed ? "Closed" : order.stage}
-              </Pill>
+              {/* Was a bare stage name. The pill carries the position too, so
+                  the header answers "how far along" without the eye having to
+                  find the spine below it. */}
+              <StagePill order={order} />
               {order.serviceLevel === "White Glove" && (
                 <Pill tone="rose">White Glove</Pill>
               )}
@@ -210,22 +214,22 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
         </div>
       </HoloPanel>
 
-      {/* ══ Ignition spine ════════════════════════════════════════════ */}
-      <HoloPanel className="p-5 sm:p-6">
-        <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-[15px] font-semibold tracking-tight">
-            Stage {stageNo} of {STAGES.length} ·{" "}
-            <span className="plasma-text">{order.stage}</span>
-          </h2>
-          <p className="max-w-xl text-xs text-muted-foreground">
-            {STAGE_BLURB[order.stage]}
-          </p>
-        </div>
+      {/*
+        ══ Lifecycle ═══════════════════════════════════════════════════
+        The ten stages as one object — position, the current stage in full, the
+        next one named, and the audit trail folded underneath. It replaced a
+        headline-plus-spine panel that showed where you were and nothing else,
+        and it now also carries the custody log the right rail used to hold,
+        since the rail is scoped to the overview.
+      */}
+      <LifecyclePanel order={order} showCustody={false} />
 
-        <StageSpine stage={order.stage} closed={order.closed} />
-
-        {order.stage === "Data Load" && !order.closed && (
-          <div className="mt-6 overflow-hidden rounded-2xl bg-muted/40 p-4 ring-1 ring-inset ring-border">
+      {/* Live copy telemetry stays separate: it is a reading off the device,
+          not a property of the lifecycle — and it only exists while the device
+          is filling. */}
+      {order.stage === "Data Load" && !order.closed && (
+        <HoloPanel className="p-5 sm:p-6">
+          <div className="overflow-hidden rounded-2xl bg-muted/40 p-4 ring-1 ring-inset ring-border">
             <div className="flex items-baseline justify-between">
               <HudLabel>BRYCK live copy progress</HudLabel>
               <p className="text-lg font-semibold tabular-nums">
@@ -254,8 +258,8 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
               device
             </p>
           </div>
-        )}
-      </HoloPanel>
+        </HoloPanel>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         {/* ── left ── */}

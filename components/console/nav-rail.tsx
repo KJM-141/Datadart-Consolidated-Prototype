@@ -41,7 +41,7 @@ export function NavRail({
       animate="show"
       aria-label="Primary"
       className={cn(
-        "relative flex h-full flex-col overflow-y-auto bg-canvas/72",
+        "relative flex h-full flex-col overflow-y-auto bg-chrome",
         className,
       )}
     >
@@ -54,7 +54,9 @@ export function NavRail({
       {/* Brand sits at the same 56px as the top bar so the two align exactly,
           and centred in the column rather than hung off its left edge. */}
       <div className="relative flex h-14 shrink-0 items-center justify-center border-b border-hair px-4">
-        <Logo size="sm" href={PATHS.dashboard} />
+        {/* `md` rather than `sm`: the gradient lockup is a 4.5:1 letterbox, so
+            a 22px height left it floating in a 56px bar. */}
+        <Logo size="md" href={PATHS.dashboard} />
       </div>
 
       <div className="relative flex-1 space-y-6 px-3 py-5">

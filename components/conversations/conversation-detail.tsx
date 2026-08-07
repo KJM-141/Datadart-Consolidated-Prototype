@@ -167,7 +167,10 @@ export function ConversationDetail({
                             You
                           </span>
                         )}
-                        <p
+                        {/* A div, not a p: Markdown emits paragraphs and lists,
+                            and block elements inside a <p> are invalid markup
+                            that React refuses to hydrate. */}
+                        <div
                           className={cn(
                             "max-w-[80%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed",
                             t.role === "agent"
@@ -176,7 +179,7 @@ export function ConversationDetail({
                           )}
                         >
                           <Markdown text={t.text} />
-                        </p>
+                        </div>
                       </div>
                     ))}
                   </div>

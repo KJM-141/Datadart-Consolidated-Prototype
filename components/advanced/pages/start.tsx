@@ -53,6 +53,8 @@ const ASK: Record<Slot, (f: TransferFacts) => string> = {
   serviceLevel: () =>
     "Want our **White Glove** service, where our engineers handle the data load on site?",
   timeline: () => "When do you need this completed by?",
+  frequency: () =>
+    "**How often do you run a move like this?** If it repeats, renting the fleet usually beats shipping it back and forth.",
   compliance: () =>
     "Last one — does this data carry any compliance requirements?",
   complete: () =>
@@ -298,6 +300,10 @@ function IntakeConsole() {
         setFacts((f) => ({ ...f, [key]: undefined }));
         agentSay("No problem — what should it be instead?", { delay: 400 });
       }}
+      /* Routed through `send` rather than setting the fact directly: choosing a
+         cadence in the panel is the same answer as typing it, so it should
+         leave the same trace in the transcript and advance the same slot. */
+      onCadence={(cadence) => send(cadence)}
       onRequestProposal={() => {
         setProposalRequested(true);
         toast.success("Draft saved", {
@@ -338,8 +344,8 @@ function IntakeConsole() {
                 {!reduce && (
                   <span className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]" />
                 )}
-                <span className="absolute inset-[2px] grid place-items-center rounded-full bg-card">
-                  <AssistantMark size={20} />
+                <span className="absolute inset-[2px] overflow-hidden rounded-full">
+                  <AssistantMark size={32} />
                 </span>
               </span>
               <div className="min-w-0">

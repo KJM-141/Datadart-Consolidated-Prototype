@@ -4,12 +4,15 @@ import { useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpRight,
   CalendarClock,
+  ChevronDown,
+  CircleMinus,
   FileSignature,
   ShieldCheck,
+  ShoppingCart,
   Wallet,
 } from "lucide-react";
 import { HudLabel, LiveDot, Pill } from "@/components/advanced/kit/hud";
@@ -18,22 +21,27 @@ import { PATHS } from "@/lib/nav";
 import { PRODUCTS, productStage } from "@/lib/products";
 import { fmtUSD } from "@/lib/pricing";
 import { stageIndex, STAGES } from "@/lib/lifecycle";
-import type { TransferFacts } from "@/lib/types";
-import { useAppStore, useMounted } from "@/lib/store";
-import { bloomSoft, deckStagger } from "@/lib/advanced-motion";
+import { cartKey, useAppStore, useMounted } from "@/lib/store";
+import {
+  bloomSoft,
+  deckStagger,
+  EASE_ADV,
+  useSafeReducedMotion,
+} from "@/lib/advanced-motion";
 import { cn } from "@/lib/utils";
-import { LogoMark } from "@/components/brand/logo-mark";
 
 /**
  * ── The right rail ────────────────────────────────────────────────────────
  *
- * 352px, always present, and always carrying something — `railSections()`
- * brackets every route with *Needs you* and *Assistant*, so there is no
- * pathname on which this column is dead weight.
+ * 352px, and the overview's alone — see `lib/rail-spec.ts` for why it stopped
+ * following you onto every route. Four sections: what is in the cart, what
+ * needs you, what is moving, and the catalogue.
  *
- * On the hardware routes it becomes the product panel, which is the single
- * feature the Vercel app had that the deck did not: the catalogue stays beside
- * you while you work instead of being a place you navigate to.
+ * The catalogue is the Vercel app's contribution to the blend: hardware stays
+ * beside you on the screen you plan from, instead of being a place you navigate
+ * to.
+ *
+ * Every section folds, and the choice persists.
  */
 export function RightRail({ className }: { className?: string }) {
   const pathname = usePathname();
@@ -45,16 +53,10 @@ export function RightRail({ className }: { className?: string }) {
       initial="hidden"
       animate="show"
       aria-label="Panel"
-      className={cn("h-full flex-col overflow-y-auto bg-canvas/72", className)}
+      className={cn("h-full flex-col overflow-y-auto bg-chrome", className)}
     >
       {sections.map((s) => (
-        <motion.section
-          key={s}
-          variants={bloomSoft}
-          className="border-b border-hair px-4 pb-5 pt-4 last:border-b-0"
-        >
-          <Section id={s} />
-        </motion.section>
+        <Section key={s} id={s} />
       ))}
     </motion.aside>
   );
@@ -68,26 +70,8 @@ function Section({ id }: { id: RailSection }) {
       return <ProductPanel />;
     case "active":
       return <ActiveTransfers />;
-    case "alerts":
-      return <Alerts />;
-    case "custody":
-      return <Custody />;
-    case "checkpoints":
-      return <Checkpoints />;
-    case "payments":
-      return <Payments />;
-    case "documents":
-      return <Documents />;
-    case "estimate":
-      return <RateCard />;
-    case "draft":
-      return <Draft />;
-    case "renewals":
-      return <Renewals />;
-    case "account":
-      return <Account />;
-    case "assistant":
-      return <Assistant />;
+    case "cart":
+      return <CartPanel />;
   }
 }
 
@@ -106,11 +90,11 @@ function NeedsYou() {
   } as const;
 
   return (
-    <>
-      <Head label="Needs you">
-        {items.length > 0 && <Pill tone="plasma">{items.length}</Pill>}
-      </Head>
-
+    <Panel
+      id="needs-you"
+      label="Needs you"
+      head={items.length > 0 && <Pill tone="plasma">{items.length}</Pill>}
+    >
       {items.length === 0 ? (
         <p className="mt-3 text-[12.5px] leading-relaxed text-ink-2">
           Nothing outstanding. Every open transfer is signed, settled to its
@@ -147,7 +131,7 @@ function NeedsYou() {
           })}
         </ul>
       )}
-    </>
+    </Panel>
   );
 }
 
@@ -162,13 +146,18 @@ function ProductPanel() {
   const addToCart = useAppStore((s) => s.addToCart);
 
   return (
-    <>
-      <Head label="Hardware">
-        <Link href={PATHS.hardware} className="text-[11px] text-(--plasma) hover:underline">
+    <Panel
+      id="product"
+      label="Hardware"
+      head={
+        <Link
+          href={PATHS.hardware}
+          className="text-[11px] text-(--plasma) hover:underline"
+        >
           All
         </Link>
-      </Head>
-
+      }
+    >
       <ul className="mt-3 space-y-2">
         {PRODUCTS.map((p) => {
           const capacity = p.capacities?.[p.capacities.length - 1];
@@ -228,7 +217,7 @@ function ProductPanel() {
           );
         })}
       </ul>
-    </>
+    </Panel>
   );
 }
 
@@ -251,12 +240,15 @@ function ActiveTransfers() {
   const hidden = live.length - ACTIVE_SHOWN;
 
   return (
-    <>
-      <Head label="Active transfers">
+    <Panel
+      id="active"
+      label="Active transfers"
+      head={
         <Pill tone="cyo">
           <LiveDot /> live
         </Pill>
-      </Head>
+      }
+    >
       <ul className="mt-3 space-y-2.5">
         {live.slice(0, ACTIVE_SHOWN).map((o) => (
           <li key={o.displayId}>
@@ -293,309 +285,194 @@ function ActiveTransfers() {
           {hidden} more →
         </Link>
       )}
-    </>
+    </Panel>
   );
 }
 
-function Alerts() {
-  return (
-    <>
-      <Head label="Alert thresholds" />
-      <ul className="mt-3 space-y-2 text-[12.5px] text-ink-2">
-        {[
-          ["Temperature", "above 28 °C"],
-          ["Shock", "above 4 g"],
-          ["Custody", "any unscheduled handoff"],
-        ].map(([what, when]) => (
-          <li key={what} className="flex items-baseline justify-between gap-3">
-            <span className="text-ink">{what}</span>
-            <span className="font-mono text-[11px] text-ink-3">{when}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-3 text-[11.5px] leading-relaxed text-ink-3">
-        Fires to email and in-app the moment a threshold is crossed.
-      </p>
-    </>
-  );
-}
-
-/* ═══════════════════════════ Transfer-scoped ═════════════════════════════ */
-
-/** The order the current route is about, if the pathname names one. */
-function useRouteOrder() {
-  const pathname = usePathname();
-  const orders = useAppStore((s) => s.orders);
-  const id = pathname.split("/").filter(Boolean).pop();
-  return orders.find((o) => o.displayId === id);
-}
-
-function Custody() {
-  const order = useRouteOrder();
-  return (
-    <>
-      <Head label="Chain of custody" />
-      {order ? (
-        <ol className="mt-3 space-y-2">
-          {order.stageHistory.slice(-4).map((e, i) => (
-            <li key={i} className="flex items-baseline gap-2.5">
-              <span className="mt-1.5 size-1.5 shrink-0 rounded-full plasma-fill" />
-              <span className="min-w-0 flex-1">
-                <span className="block text-[12.5px]">{e.stage}</span>
-                <span className="font-mono text-[10.5px] text-ink-3">
-                  {e.at.slice(0, 10)} · {e.owner}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <Empty>Open a transfer to see its custody log.</Empty>
-      )}
-    </>
-  );
-}
-
-function Checkpoints() {
-  const order = useRouteOrder();
-  const at = order ? stageIndex(order.stage) : -1;
-  return (
-    <>
-      <Head label="Progress" />
-      {order ? (
-        <ol className="mt-3 space-y-1.5">
-          {STAGES.map((s, i) => (
-            <li key={s} className="flex items-center gap-2.5 text-[12px]">
-              <span
-                className={cn(
-                  "size-1.5 shrink-0 rounded-full",
-                  i < at ? "plasma-fill" : i === at ? "bg-(--cyo)" : "bg-hair",
-                )}
-              />
-              <span className={i <= at ? "text-ink" : "text-ink-3"}>{s}</span>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <Empty>No transfer selected.</Empty>
-      )}
-    </>
-  );
-}
-
-function Payments() {
-  const order = useRouteOrder();
-  return (
-    <>
-      <Head label="Payment milestones" />
-      {order ? (
-        <ul className="mt-3 space-y-2">
-          {order.payments.map((p) => (
-            <li key={p.label} className="flex items-baseline justify-between gap-3">
-              <span className="text-[12.5px] text-ink-2">{p.label}</span>
-              <span
-                className={cn(
-                  "font-mono text-[12px] tabular-nums",
-                  p.status === "paid" ? "text-ok" : p.status === "due" ? "text-(--plasma)" : "text-ink-3",
-                )}
-              >
-                {fmtUSD(p.amount)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Empty>No transfer selected.</Empty>
-      )}
-    </>
-  );
-}
-
-function Documents() {
-  const order = useRouteOrder();
-  return (
-    <>
-      <Head label="Documents & certificates" />
-      {order ? (
-        <ul className="mt-3 space-y-1.5">
-          {order.documents.map((d) => (
-            <li key={d.type} className="flex items-baseline justify-between gap-3">
-              <span className="text-[12.5px] text-ink-2">{d.type}</span>
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink-3">
-                {d.status === "available" ? "ready" : d.status}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Empty>No transfer selected.</Empty>
-      )}
-    </>
-  );
-}
-
-/* ═════════════════════════════════ Other ═════════════════════════════════ */
-
-function RateCard() {
-  return (
-    <>
-      <Head label="How pricing works" />
-      <ul className="mt-3 space-y-1.5 text-[12.5px]">
-        {[
-          ["Device rental", "capacity × duration"],
-          ["Protection", "per device"],
-          ["DT2 port-hours", "real egress hours"],
-          ["Logistics", "round trip, by lane"],
-        ].map(([k, v]) => (
-          <li key={k} className="flex items-baseline justify-between gap-3">
-            <span className="text-ink-2">{k}</span>
-            <span className="font-mono text-[11px] text-ink-3">{v}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-3 text-[11.5px] leading-relaxed text-ink-3">
-        A range is quoted so there are no surprises at proposal.
-      </p>
-    </>
-  );
-}
+/* ════════════════════════════════ Cart ═══════════════════════════════════ */
 
 /**
- * Written out rather than derived from the key.
+ * The manifest, docked at the head of the rail.
  *
- * The previous version split on capitals and lower-cased the result, which
- * turned `sizeTB` into "size t b" and then — via `capitalize` — into
- * "Size T B". Any mechanical humaniser breaks on the initialisms this domain
- * is full of (TB, SLA, DPU), and there are seven keys.
+ * It replaced a static Assistant blurb that repeated the same three sentences on
+ * every route — and before it existed, the only acknowledgement that you had
+ * added anything was a badge in a nav rail two columns away.
+ *
+ * Seated first because it is the section whose contents you changed most
+ * recently. At the foot of the rail it fell below whatever the route added, so
+ * on the hardware pages the confirmation sat underneath the catalogue that
+ * produced it, off-screen at the moment you pressed the button.
  */
-const FACT_LABELS: Record<keyof TransferFacts, string> = {
-  sizeTB: "Size",
-  sourceType: "Source type",
-  sourceLocation: "From",
-  destination: "To",
-  timeline: "Timeline",
-  serviceLevel: "Service level",
-  compliance: "Compliance",
-};
-
-function Draft() {
-  const conversations = useAppStore((s) => s.conversations);
+function CartPanel() {
+  const cart = useAppStore((s) => s.cart);
+  const removeFromCart = useAppStore((s) => s.removeFromCart);
   const mounted = useMounted();
-  const live = mounted ? conversations[0] : undefined;
+  const items = mounted ? cart : [];
+
+  const units = items.reduce((n, i) => n + i.qty, 0);
+  const monthly = items.reduce((n, i) => n + i.monthlyRate * i.qty, 0);
 
   return (
-    <>
-      <Head label="What is moving" />
-      {live ? (
-        <ul className="mt-3 space-y-1.5 text-[12.5px]">
-          {Object.entries(live.facts)
-            .filter(([k, v]) => v !== undefined && v !== "" && k in FACT_LABELS)
-            .map(([k, v]) => (
-              <li key={k} className="flex items-baseline justify-between gap-3">
-                <span className="text-ink-2">
-                  {FACT_LABELS[k as keyof TransferFacts]}
+    <Panel
+      id="cart"
+      label="Cart"
+      icon={ShoppingCart}
+      head={units > 0 && <Pill tone="plasma">{units}</Pill>}
+    >
+      {items.length === 0 ? (
+        <>
+          <Empty>Nothing on the manifest yet.</Empty>
+          <Link
+            href={PATHS.hardware}
+            className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-(--plasma) hover:underline"
+          >
+            Browse hardware <ArrowUpRight className="size-3" />
+          </Link>
+        </>
+      ) : (
+        <>
+          <ul className="mt-3 space-y-2">
+            {items.map((i) => (
+              <li
+                key={cartKey(i)}
+                className="group flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-accent"
+              >
+                <span className="relative size-9 shrink-0 overflow-hidden rounded-md bg-sunk ring-1 ring-inset ring-hair">
+                  <Image
+                    src={i.image}
+                    alt=""
+                    fill
+                    sizes="36px"
+                    className="object-contain p-0.5"
+                  />
                 </span>
-                <span className="truncate font-mono text-[11px]">
-                  {k === "sizeTB" ? `${v} TB` : String(v)}
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12.5px] leading-snug">
+                    {i.model}
+                  </span>
+                  <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
+                    {i.detail} · ×{i.qty}
+                  </span>
                 </span>
+                <button
+                  type="button"
+                  onClick={() => removeFromCart(cartKey(i))}
+                  aria-label={`Remove ${i.model} from cart`}
+                  className="shrink-0 text-ink-3 opacity-0 transition-all hover:text-(--plasma) focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <CircleMinus className="size-3.5" />
+                </button>
               </li>
             ))}
-        </ul>
-      ) : (
-        <Empty>Nothing captured yet. Describe a transfer to begin.</Empty>
+          </ul>
+
+          {/* Two of the three catalogue entries carry no list rate, so a
+              confident "$0 / month" would be a lie. Show the figure only when
+              there is one. */}
+          <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-hair pt-3">
+            <span className="text-[12px] text-ink-2">Monthly</span>
+            {monthly > 0 ? (
+              <span className="font-mono text-[12.5px] font-medium tabular-nums">
+                {fmtUSD(monthly)}
+              </span>
+            ) : (
+              <span className="text-[11px] text-ink-3">confirmed at checkout</span>
+            )}
+          </div>
+
+          <Link
+            href={PATHS.checkout}
+            className="btn-brand mt-3 flex h-9 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+          >
+            Review manifest
+          </Link>
+        </>
       )}
-    </>
-  );
-}
-
-function Renewals() {
-  const subs = useAppStore((s) => s.subscriptions);
-  const mounted = useMounted();
-  const open = mounted ? subs.filter((s) => s.status !== "Closed") : [];
-
-  return (
-    <>
-      <Head label="Rental end dates" />
-      {open.length ? (
-        <ul className="mt-3 space-y-2">
-          {open.map((s) => (
-            <li key={s.id} className="flex items-baseline justify-between gap-3">
-              <span className="font-mono text-[11px] text-ink-3">{s.id}</span>
-              <span className="font-mono text-[11.5px] tabular-nums">{s.endDate}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Empty>No active rentals.</Empty>
-      )}
-    </>
-  );
-}
-
-function Account() {
-  const profile = useAppStore((s) => s.profile);
-  const mounted = useMounted();
-  return (
-    <>
-      <Head label="Account" />
-      {mounted && (
-        <ul className="mt-3 space-y-1.5 text-[12.5px]">
-          <Row k="Name" v={`${profile.firstName} ${profile.lastName}`} />
-          <Row k="Email" v={profile.email} />
-          <Row k="Region" v={profile.address.country || "—"} />
-        </ul>
-      )}
-    </>
-  );
-}
-
-function Assistant() {
-  return (
-    <>
-      <Head label="Assistant">
-        <LogoMark size={15} />
-      </Head>
-      <p className="mt-3 text-[12.5px] leading-relaxed text-ink-2">
-        Ask about a transfer, or say what you need moved and where.
-      </p>
-      <Link
-        href={PATHS.start}
-        className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-(--plasma) hover:underline"
-      >
-        Plan a new transfer <ArrowUpRight className="size-3.5" />
-      </Link>
-    </>
+    </Panel>
   );
 }
 
 /* ══════════════════════════════════ Bits ═════════════════════════════════ */
 
 /**
- * A section header, banded.
+ * A rail section: banded header that folds the body away.
  *
  * The rail previously separated its sections with a hairline and nothing else,
  * so eight stacked panels read as one long undifferentiated column. A sunk band
  * bled to both edges gives each section a lid — the same device a table header
- * uses, and for the same reason.
+ * uses, and for the same reason. The lid is now a control, and what it does is
+ * remembered.
+ *
+ * `head` sits *outside* the disclosure button rather than inside it: several
+ * sections put a link there, and an anchor nested in a button is invalid markup
+ * that React refuses to hydrate.
  */
-function Head({ label, children }: { label: string; children?: React.ReactNode }) {
+function Panel({
+  id,
+  label,
+  icon: Icon,
+  head,
+  children,
+}: {
+  id: RailSection;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  head?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const collapsed = useAppStore((s) => Boolean(s.railCollapsed[id]));
+  const toggleRailSection = useAppStore((s) => s.toggleRailSection);
+  const mounted = useMounted();
+  const reduce = useSafeReducedMotion();
+
+  // The collapse map is persisted, and persisted state is not available during
+  // SSR or the first client paint. Gating on `mounted` keeps both renders
+  // expanded so the markup matches, then folds once the store has rehydrated.
+  const isCollapsed = mounted && collapsed;
+
   return (
-    <div className="-mx-4 -mt-4 mb-3.5 flex items-center justify-between gap-2 border-b border-hair bg-sunk/70 px-4 py-2.5">
-      <HudLabel>{label}</HudLabel>
-      {children}
-    </div>
+    <motion.section
+      variants={bloomSoft}
+      className="border-b border-hair last:border-b-0"
+    >
+      <div className="flex items-center justify-between gap-2 border-b border-hair bg-sunk/70 px-4 py-2.5">
+        <button
+          type="button"
+          onClick={() => toggleRailSection(id)}
+          aria-expanded={!isCollapsed}
+          className="group flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          <ChevronDown
+            aria-hidden
+            className={cn(
+              "size-3 shrink-0 text-ink-3 transition-transform duration-300 group-hover:text-ink-2",
+              isCollapsed && "-rotate-90",
+            )}
+          />
+          {Icon && <Icon className="size-3 shrink-0 text-ink-3" />}
+          <HudLabel className="truncate">{label}</HudLabel>
+        </button>
+        {head && <div className="shrink-0">{head}</div>}
+      </div>
+
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.26, ease: EASE_ADV }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-5">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
   );
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
   return <p className="mt-3 text-[12px] leading-relaxed text-ink-3">{children}</p>;
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <li className="flex items-baseline justify-between gap-3">
-      <span className="text-ink-2">{k}</span>
-      <span className="truncate font-mono text-[11px]">{v}</span>
-    </li>
-  );
 }

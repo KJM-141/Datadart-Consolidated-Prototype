@@ -8,7 +8,7 @@
  * secret redaction and next-question selection. It is pure and synchronous so
  * it can also power the offline wizard fallback (FR-1.7).
  */
-import type { TransferFacts } from "./types";
+import type { Cadence, TransferFacts } from "./types";
 
 /* ── Secret redaction (FR-1.4) ──────────────────────────────────────────── */
 
@@ -112,6 +112,39 @@ function parseTimeline(text: string): string | undefined {
   return m ? m[0] : undefined;
 }
 
+/**
+ * How often the move repeats.
+ *
+ * Every pattern demands an explicit recurrence marker — "monthly", "every
+ * month" — never the bare noun. `parseTimeline` above claims "this month",
+ * "next quarter" and "3 months", and a message is read against every parser, so
+ * a bare `\bmonth\b` would silently turn the answer to *when* into an answer to
+ * *how often*. Recurring cases are tested before the single-shot ones.
+ */
+const CADENCES: [RegExp, Cadence][] = [
+  [
+    /\bquarterly\b|\b(?:every|each) quarter\b|\bevery 3 months\b|\b4x?\s*(?:a|per) year\b/i,
+    "Quarterly",
+  ],
+  [
+    /\bmonthly\b|\b(?:every|each) month\b|\bevery 30 days\b|\b12x?\s*(?:a|per) year\b/i,
+    "Monthly",
+  ],
+  [
+    /\bongoing\b|\bcontinuous(?:ly)?\b|\bconstantly\b|\ball the time\b|\bweekly\b|\b(?:every|each) week\b|\bdaily\b|\bevery day\b|\bregularly\b|\brecurring\b|\brolling basis\b/i,
+    "Ongoing",
+  ],
+  [
+    /\bone[-\s]?off\b|\bone[-\s]?time\b|\bjust once\b|\bonly once\b|\bnot recurring\b|\bsingle (?:move|transfer|migration)\b|\bonce\b/i,
+    "One-off",
+  ],
+];
+
+function parseFrequency(text: string): Cadence | undefined {
+  for (const [re, label] of CADENCES) if (re.test(text)) return label;
+  return undefined;
+}
+
 function parseCompliance(text: string): string | undefined {
   if (/hipaa|healthcare|patient|phi\b/i.test(text)) return "Healthcare (HIPAA)";
   if (/gdpr|eu data|europe.*residen/i.test(text)) return "EU / GDPR";
@@ -146,6 +179,8 @@ export function extractFacts(text: string, current: TransferFacts): TransferFact
   if (sl) next.serviceLevel = sl;
   const tl = parseTimeline(text);
   if (tl) next.timeline = tl;
+  const fq = parseFrequency(text);
+  if (fq) next.frequency = fq;
   const cf = parseCompliance(text);
   if (cf) next.compliance = cf;
 
@@ -160,6 +195,7 @@ export type Slot =
   | "destination"
   | "serviceLevel"
   | "timeline"
+  | "frequency"
   | "compliance"
   | "complete";
 
@@ -169,6 +205,10 @@ export function nextSlot(f: TransferFacts): Slot {
   if (!f.destination) return "destination";
   if (!f.serviceLevel) return "serviceLevel";
   if (!f.timeline) return "timeline";
+  // Asked straight after the timeline: "by when" and "how often" are the same
+  // thought, and the answer decides whether this ends as an order or a rental
+  // subscription.
+  if (!f.frequency) return "frequency";
   if (!f.compliance) return "compliance";
   return "complete";
 }
@@ -188,8 +228,14 @@ export const SLOT_CHIPS: Partial<Record<Slot, string[]>> = {
   ],
   serviceLevel: ["Yes, White Glove", "We'll self-manage", "What's included?"],
   timeline: ["ASAP", "Within 4 weeks", "This quarter"],
+  frequency: ["One-off", "Monthly", "Quarterly", "Ongoing"],
   compliance: ["Healthcare (HIPAA)", "EU / GDPR", "Government", "None"],
 };
+
+/** Anything other than a single shipment is a rental, not an order. */
+export function isRecurring(f: TransferFacts): boolean {
+  return Boolean(f.frequency && f.frequency !== "One-off");
+}
 
 /** True when we know enough to price (FR-1.5 — before contact capture). */
 export function canEstimate(f: TransferFacts): boolean {

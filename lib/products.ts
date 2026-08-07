@@ -38,7 +38,7 @@ export const PRODUCTS: Product[] = [
     model: "BRYCK",
     name: "BRYCK",
     tagline: "1 petabyte in the form factor of a brick — 14 lbs",
-    image: "/assets/products/bryck.webp",
+    image: "/assets/products/bryck-hero.webp",
     imageAspect: "square",
     monthlyCost: 0,
     priceNote: "from",
@@ -89,7 +89,7 @@ export const PRODUCTS: Product[] = [
     model: "BM-LPSL1",
     name: "BRYCK Mini",
     tagline: "Compact rugged storage for harsh environments",
-    image: "/assets/products/bryck-mini.webp",
+    image: "/assets/products/mini.webp",
     imageAspect: "tall",
     monthlyCost: 0,
     capacities: [256],
@@ -150,7 +150,7 @@ export const PRODUCTS: Product[] = [
     model: "BRYCK-FXR",
     name: "BRYCK FXR",
     tagline: "Ruggedized high-performance edge AI flyaway kit",
-    image: "/assets/products/bryck-fxr.webp",
+    image: "/assets/products/fxr.webp",
     imageAspect: "wide",
     stageTone: "dark",
     monthlyCost: 120,
@@ -231,6 +231,16 @@ export function getProduct(slug: string): Product | undefined {
 }
 
 /** Backdrop class for a product photo — dark renders get a dark stage. */
+/**
+ * Backdrop class for a product photo.
+ *
+ * Returned `bg-product-stage` / `bg-product-stage-dark` for as long as the
+ * catalogue has existed, and neither was ever declared — Tailwind emitted
+ * nothing for either, so every render sat directly on whatever card was behind
+ * it. Both are real utilities now (see `tokens.css`), and the class names lost
+ * the `bg-` prefix they never earned: they set a layered background, not a
+ * single colour.
+ */
 export function productStage(p: Pick<Product, "stageTone">): string {
-  return p.stageTone === "dark" ? "bg-product-stage-dark" : "bg-product-stage";
+  return p.stageTone === "dark" ? "product-stage-dark" : "product-stage";
 }

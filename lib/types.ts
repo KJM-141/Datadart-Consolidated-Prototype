@@ -135,12 +135,23 @@ export interface TransferOrder {
 
 /* ── Conversational intake (WF-1) ─────────────────────────────────────── */
 
+/**
+ * How often the customer runs this move.
+ *
+ * The distinction the rest of the product hangs off: a one-off is an order, and
+ * anything that repeats is a subscription. Without this the conversational
+ * pipeline could only ever produce the former, and the whole rental side of the
+ * catalogue was unreachable from the assistant.
+ */
+export type Cadence = "One-off" | "Monthly" | "Quarterly" | "Ongoing";
+
 export interface TransferFacts {
   sizeTB?: number;
   sourceType?: string;
   sourceLocation?: string;
   destination?: string;
   timeline?: string;
+  frequency?: Cadence;
   serviceLevel?: "Self-managed" | "White Glove";
   compliance?: string;
 }
