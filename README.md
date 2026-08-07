@@ -25,7 +25,7 @@ top.
 ## Original redesign notes
 
 A modern, ground-up redesign prototype of the DataDart customer portal
-(https://portal.datadart.services) by T|Second. Every route, form, wizard and
+(https://portal.datadart.services) by Tsecond. Every route, form, wizard and
 component from the live portal is rebuilt to a 2026 best-in-class standard while
 preserving the brand: the purple→blue gradient, the DATA|DART wordmark, and
 Poppins.
