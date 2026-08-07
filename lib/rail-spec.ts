@@ -23,8 +23,8 @@ import type { TransferOrder } from "./types";
 
 export type RailSection =
   | "needs-you"
-  | "signals"
-  | "watchers"
+  | "active"
+  | "alerts"
   | "custody"
   | "checkpoints"
   | "payments"
@@ -49,7 +49,7 @@ function routeSections(pathname: string): RailSection[] {
   if (pathname.startsWith(PATHS.transfer(""))) {
     return ["custody", "checkpoints", "payments", "documents"];
   }
-  if (pathname.startsWith(PATHS.transfers)) return ["signals", "watchers"];
+  if (pathname.startsWith(PATHS.transfers)) return ["active", "alerts"];
   if (pathname.startsWith(PATHS.sizer)) return ["estimate"];
   if (pathname.startsWith(PATHS.start)) return ["draft"];
   if (pathname.startsWith(PATHS.conversations)) return ["draft"];
@@ -59,7 +59,12 @@ function routeSections(pathname: string): RailSection[] {
   // The dashboard, and anything unrecognised, gets the operational view plus
   // the catalogue — the hardware tile used to sit in the centre column, where
   // it was reachable from exactly one route. In the rail it is always there.
-  return ["signals", "product", "watchers"];
+  //
+  // Alert thresholds are deliberately *not* here. They are static configuration
+  // that never changes between visits, so on the busiest route they were a
+  // fourth panel of nothing-new pushing the live sections off-screen. They stay
+  // on the transfers route, where "what would page me" is the question at hand.
+  return ["active", "product"];
 }
 
 /* ═══════════════════════════════ Needs you ═══════════════════════════════ */

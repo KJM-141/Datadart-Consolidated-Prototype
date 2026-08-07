@@ -9,7 +9,6 @@ import {
   ArrowUpRight,
   CalendarClock,
   FileSignature,
-  MapPin,
   ShieldCheck,
   Wallet,
 } from "lucide-react";
@@ -67,10 +66,10 @@ function Section({ id }: { id: RailSection }) {
       return <NeedsYou />;
     case "product":
       return <ProductPanel />;
-    case "signals":
-      return <Signals />;
-    case "watchers":
-      return <Watchers />;
+    case "active":
+      return <ActiveTransfers />;
+    case "alerts":
+      return <Alerts />;
     case "custody":
       return <Custody />;
     case "checkpoints":
@@ -203,6 +202,9 @@ function ProductPanel() {
                 </div>
               </div>
 
+              {/* Was a full-width filled bar per card, which made three stacked
+                  catalogue tiles read as three competing CTAs. A text action
+                  carries the same affordance at a third of the weight. */}
               {capacity && (
                 <button
                   type="button"
@@ -217,9 +219,9 @@ function ProductPanel() {
                       image: p.image,
                     })
                   }
-                  className="mt-2.5 w-full rounded-md bg-sunk py-1.5 text-[11.5px] font-medium text-ink-2 ring-1 ring-inset ring-hair transition-colors hover:text-ink hover:ring-[color-mix(in_oklab,var(--plasma)_36%,transparent)]"
+                  className="mt-2 text-[11.5px] font-medium text-ink-3 transition-colors hover:text-(--plasma)"
                 >
-                  Add {capacity} TB to plan
+                  + Add {capacity} TB
                 </button>
               )}
             </li>
@@ -232,20 +234,31 @@ function ProductPanel() {
 
 /* ═══════════════════════════════ Operations ══════════════════════════════ */
 
-function Signals() {
+/**
+ * Was "Signals", which named the mechanism rather than the content — the list
+ * is simply the transfers currently in flight, so it says that now.
+ *
+ * Capped at four. The rail is a glance, not the transfers table: an uncapped
+ * list pushed every section below it off-screen as the book grew, and the
+ * remainder is one click away in the header.
+ */
+const ACTIVE_SHOWN = 4;
+
+function ActiveTransfers() {
   const orders = useAppStore((s) => s.orders);
   const mounted = useMounted();
   const live = mounted ? orders.filter((o) => !o.closed) : [];
+  const hidden = live.length - ACTIVE_SHOWN;
 
   return (
     <>
-      <Head label="Signals">
+      <Head label="Active transfers">
         <Pill tone="cyo">
           <LiveDot /> live
         </Pill>
       </Head>
       <ul className="mt-3 space-y-2.5">
-        {live.map((o) => (
+        {live.slice(0, ACTIVE_SHOWN).map((o) => (
           <li key={o.displayId}>
             <Link href={PATHS.transfer(o.displayId)} className="group block">
               <div className="flex items-baseline justify-between gap-2">
@@ -254,8 +267,9 @@ function Signals() {
                   {o.volumeTB.toLocaleString()} TB
                 </span>
               </div>
-              <p className="mt-0.5 flex items-center gap-1.5 truncate text-[12px] text-ink-2 transition-colors group-hover:text-ink">
-                <MapPin className="size-3 shrink-0 text-ink-3" />
+              {/* No pin icon: the arrow already says "route", and a marker on
+                  every row was three dozen pixels of decoration per screen. */}
+              <p className="mt-0.5 truncate text-[12px] text-ink-2 transition-colors group-hover:text-ink">
                 {o.source.label} → {o.destination.label}
               </p>
               <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-sunk">
@@ -271,14 +285,22 @@ function Signals() {
         ))}
         {live.length === 0 && <Empty>No transfers in flight.</Empty>}
       </ul>
+      {hidden > 0 && (
+        <Link
+          href={PATHS.transfers}
+          className="mt-2.5 inline-block text-[11.5px] text-ink-3 transition-colors hover:text-(--plasma)"
+        >
+          {hidden} more →
+        </Link>
+      )}
     </>
   );
 }
 
-function Watchers() {
+function Alerts() {
   return (
     <>
-      <Head label="Standing triggers" />
+      <Head label="Alert thresholds" />
       <ul className="mt-3 space-y-2 text-[12.5px] text-ink-2">
         {[
           ["Temperature", "above 28 °C"],
@@ -339,7 +361,7 @@ function Checkpoints() {
   const at = order ? stageIndex(order.stage) : -1;
   return (
     <>
-      <Head label="Checkpoints" />
+      <Head label="Progress" />
       {order ? (
         <ol className="mt-3 space-y-1.5">
           {STAGES.map((s, i) => (
@@ -417,7 +439,7 @@ function Documents() {
 function RateCard() {
   return (
     <>
-      <Head label="Rate card" />
+      <Head label="How pricing works" />
       <ul className="mt-3 space-y-1.5 text-[12.5px]">
         {[
           ["Device rental", "capacity × duration"],
@@ -493,7 +515,7 @@ function Renewals() {
 
   return (
     <>
-      <Head label="Upcoming" />
+      <Head label="Rental end dates" />
       {open.length ? (
         <ul className="mt-3 space-y-2">
           {open.map((s) => (

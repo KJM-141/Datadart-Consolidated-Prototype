@@ -406,6 +406,15 @@ h2 {
     background-image: var(--gradient-plasma);
   }
 
+  /* Gradient numerals — the derived figures in the estimate and checkout
+     summaries. Same clip trick as `.plasma-text`, on the brand ramp. */
+  .text-gradient-brand {
+    background-image: var(--gradient-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   .plasma-glow {
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--plasma) 26%, transparent),
@@ -446,6 +455,37 @@ h2 {
       0 0 0 1px rgb(255 255 255 / 18%) inset;
   }
   .btn-plasma:active {
+    transform: translateY(0) scale(0.99);
+  }
+
+  /* Primary action on the marketing/intake surfaces, where `--gradient-brand`
+     is the two-stop flatter sibling of the plasma ramp. Defined here because
+     eight call sites already asked for it; without a rule they rendered as
+     transparent pills with white text on a dark canvas. */
+  .btn-brand {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-image: var(--gradient-brand);
+    background-size: 150% 100%;
+    color: #fff;
+    box-shadow:
+      0 6px 18px -8px rgb(80 40 190 / 55%),
+      0 0 0 1px rgb(255 255 255 / 12%) inset;
+    transition:
+      background-position 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.35s ease,
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-brand:hover {
+    background-position: 100% 0;
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 26px -10px rgb(80 40 190 / 65%),
+      0 0 0 1px rgb(255 255 255 / 18%) inset;
+  }
+  .btn-brand:active {
     transform: translateY(0) scale(0.99);
   }
 
