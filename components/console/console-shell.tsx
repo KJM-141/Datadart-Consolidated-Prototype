@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AuroraCanvas } from "@/components/advanced/kit/aurora-canvas";
 import { AssistantDock } from "@/components/assistant/assistant-dock";
 import { DeckPalette } from "@/components/advanced/shell/deck-palette";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -60,17 +59,19 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         same reason — the night has to be visible through the frame, not just
         around it.
 
-        Light is the exception, and deliberately so: there is no aurora on paper
-        to separate the columns, so `--chrome` resolves to an opaque tint a rung
-        below the canvas rather than 72% of it. See the surface ladder in
-        tokens.css.
+        Reduced to the base gradient. The drifting starfield, the aurora
+        particle field, the HUD grid and the grain were four animated layers
+        behind every page of a logistics console — texture competing with the
+        figures it sat behind. `nightfall` alone keeps the depth without any of
+        the noise, and takes a canvas render loop off every route.
+
+        Light is the exception to the translucency above, and deliberately so:
+        paper has no aurora to separate the columns with — less so now that the
+        field is gone — so `--chrome` resolves to an opaque tint a rung below the
+        canvas rather than 72% of it. See the surface ladder in tokens.css.
       */}
       <div aria-hidden className="deck-ambience">
         <div className="nightfall" />
-        <div className="starfield starfield-drift" />
-        <AuroraCanvas density={4.5} link={140} opacity={0.5} interactive={110} />
-        <div className="hud-grid absolute inset-0 opacity-25" />
-        <div className="deck-grain" />
       </div>
 
       <TopBar

@@ -9,13 +9,13 @@ interface LogoProps {
 }
 
 /**
- * The DataDart wordmark — the official boxed DATA|DART lockup on the
- * magenta→blue gradient, taken from the reference build.
+ * The DataDart wordmark, imported from the reference build.
  *
- * Its viewBox is 262.29 × 57.82, so the lockup is a ~4.54:1 letterbox: much
- * wider than the 2.38:1 PNG it replaces, and the size table below is
- * height-led for exactly that reason. Setting a width on a mark this wide is
- * how you end up with a 20px-tall logo in a 56px bar.
+ * `DATA DART_Logo_Gradient.svg` — the boxed DATA|DART lockup on the official
+ * magenta→blue gradient. Its viewBox is 262.29 × 57.82, so the lockup is a
+ * ~4.54:1 letterbox: much wider than the 2.38:1 PNG it replaces, and the size
+ * table below is height-led for exactly that reason. Setting a width on a mark
+ * this wide is how you end up with a 20px-tall logo in a 56px bar.
  *
  * Rendered as a plain <img> rather than next/image: it is a 2.4 KB vector, so
  * there is nothing for the optimiser to do, and `next/image` would only add a

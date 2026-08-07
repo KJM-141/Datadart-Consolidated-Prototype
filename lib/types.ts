@@ -8,6 +8,14 @@ export interface SpecGroup {
   rows: { label: string; value: string }[];
 }
 
+/** Stock position, shown as a dot and one line — never a filled badge. */
+export interface Availability {
+  state: "available" | "limited";
+  /** Six words at most: "4 ready now", "Ships in 5 days". */
+  headline: string;
+  detail: string;
+}
+
 export interface Product {
   slug: string;
   category: ProductCategory;
@@ -16,6 +24,11 @@ export interface Product {
   name: string;
   tagline: string;
   image: string;
+  /** Every render of this product, primary first. Drives the detail gallery. */
+  gallery: string[];
+  /** The one figure worth putting next to the name. */
+  hero: { value: string; label: string };
+  availability: Availability;
   /** Aspect hint so cards can frame very different photo shapes nicely */
   imageAspect: "wide" | "tall" | "square";
   /** Backdrop tone the render was shot on — dark studio shots need a dark

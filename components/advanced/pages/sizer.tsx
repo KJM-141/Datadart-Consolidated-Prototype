@@ -8,6 +8,7 @@ import {
   Boxes,
   ChevronDown,
   Clock,
+  FileText,
   Info,
   Lock,
   Mail,
@@ -60,6 +61,8 @@ const DESTINATIONS = [
   "GCP Storage — europe-west2",
   "Private data centre",
 ];
+import { ProposalModal } from "@/components/centre/proposal";
+import { useDeclarePageScope } from "@/components/centre/page-context";
 
 /**
  * Sizer — the Advanced instrument panel.
@@ -80,6 +83,7 @@ const DESTINATIONS = [
  * against sellable capacities before anything is priced.
  */
 export function SizerAdvanced() {
+  const [proposalOpen, setProposalOpen] = useState(false);
   const governed = true;
   const [req, setReq] = useState<SizerRequest>(DEFAULT_REQUEST);
   const [source, setSource] = useState("Bengaluru, India");
@@ -149,6 +153,15 @@ export function SizerAdvanced() {
   const tooSmall = normalized.dataTB > 0 && normalized.dataTB < 1;
 
   const chatHref = `/start?size=${Math.round(normalized.dataTB)}&source=${encodeURIComponent(source)}&dest=${encodeURIComponent(destination)}&sl=${encodeURIComponent(serviceLevel)}`;
+
+  useDeclarePageScope({
+    label: "Sizer",
+    suggestions: [
+      "Explain this estimate",
+      "Would a bigger device be cheaper?",
+      "How is the timeline calculated?",
+    ],
+  });
 
   // Race bars are relative to whichever route is slower, so the loser always
   // fills the track and the winner reads as a fraction of it.
@@ -663,8 +676,37 @@ export function SizerAdvanced() {
               <Mail className="size-4" /> Email me this
             </button>
           </div>
+
+          {/* The sizer stopped at a number; a proposal is the artefact you can
+              actually take to someone, and it is built from exactly these
+              inputs — nothing is asked for again. */}
+          <button
+            type="button"
+            disabled={tooSmall || normalized.dataTB <= 0}
+            onClick={() => setProposalOpen(true)}
+            className="btn-plasma inline-flex h-12 w-full items-center justify-center gap-2 text-[13px] font-medium text-white disabled:pointer-events-none disabled:opacity-40"
+          >
+            <FileText className="size-4" /> Generate proposal
+          </button>
         </motion.div>
       </div>
+
+      <ProposalModal
+        open={proposalOpen}
+        onOpenChange={setProposalOpen}
+        input={{
+          sizing,
+          estimate: {
+            ...priced,
+            onlineMonths: comparison.wireHours / 24 / 30,
+            lineSpeedMbps: req.wireThroughput,
+            recommendOnline: tooSmall,
+          },
+          source,
+          destination,
+          serviceLevel,
+        }}
+      />
     </motion.div>
   );
 }

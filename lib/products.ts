@@ -39,6 +39,13 @@ export const PRODUCTS: Product[] = [
     name: "BRYCK",
     tagline: "1 petabyte in the form factor of a brick — 14 lbs",
     image: "/assets/products/bryck-hero.webp",
+    gallery: ["/assets/products/bryck-hero.webp", "/assets/products/bryck-alt.webp"],
+    hero: { value: "14 lbs", label: "For a petabyte" },
+    availability: {
+      state: "available",
+      headline: "4 ready now",
+      detail: "4 free of 18 tracked units.",
+    },
     imageAspect: "square",
     monthlyCost: 0,
     priceNote: "from",
@@ -90,6 +97,13 @@ export const PRODUCTS: Product[] = [
     name: "BRYCK Mini",
     tagline: "Compact rugged storage for harsh environments",
     image: "/assets/products/mini.webp",
+    gallery: ["/assets/products/mini.webp", "/assets/products/mini-alt.webp"],
+    hero: { value: "10 lbs", label: "Field weight" },
+    availability: {
+      state: "available",
+      headline: "Ships in 5 days",
+      detail: "Built to order from stock.",
+    },
     imageAspect: "tall",
     monthlyCost: 0,
     capacities: [256],
@@ -151,6 +165,17 @@ export const PRODUCTS: Product[] = [
     name: "BRYCK FXR",
     tagline: "Ruggedized high-performance edge AI flyaway kit",
     image: "/assets/products/fxr.webp",
+    gallery: [
+      "/assets/products/fxr.webp",
+      "/assets/products/fxr-alt.webp",
+      "/assets/products/fxr-kit.webp",
+    ],
+    hero: { value: "512 TB", label: "Max capacity" },
+    availability: {
+      state: "limited",
+      headline: "2 kits this quarter",
+      detail: "Flyaway kits are allocated per quarter.",
+    },
     imageAspect: "wide",
     stageTone: "dark",
     monthlyCost: 120,
@@ -230,16 +255,15 @@ export function getProduct(slug: string): Product | undefined {
   return PRODUCTS.find((p) => p.slug === slug);
 }
 
-/** Backdrop class for a product photo — dark renders get a dark stage. */
 /**
  * Backdrop class for a product photo.
  *
- * Returned `bg-product-stage` / `bg-product-stage-dark` for as long as the
- * catalogue has existed, and neither was ever declared — Tailwind emitted
- * nothing for either, so every render sat directly on whatever card was behind
- * it. Both are real utilities now (see `tokens.css`), and the class names lost
- * the `bg-` prefix they never earned: they set a layered background, not a
- * single colour.
+ * Was `bg-product-stage` / `bg-product-stage-dark`, neither of which was ever
+ * declared in CSS — so every render sat on whatever the card behind it was,
+ * and the two shots that shipped with a baked-in white matte read as white
+ * rectangles floating on the dark console. Both are real classes now (see
+ * `tokens.css`), and every render in the catalogue carries a real alpha
+ * channel, so the plinth is the only background there is.
  */
 export function productStage(p: Pick<Product, "stageTone">): string {
   return p.stageTone === "dark" ? "product-stage-dark" : "product-stage";
