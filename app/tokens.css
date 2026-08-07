@@ -958,3 +958,48 @@ textarea,
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Product stage
+
+   The plinth a hardware render stands on. Referenced by `productStage()` since
+   the catalogue was written and never actually declared, so every device sat
+   on the card behind it.
+
+   A shallow radial pool rather than a flat fill: a rugged black case on a flat
+   dark panel has no edge at all, and a flat light panel punches a white hole in
+   a dark console. The pool gives the object a floor in both themes.
+
+   `product-stage-dark` is for renders shot on black — they need the pool
+   inverted or the case disappears into it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.product-stage {
+  background:
+    radial-gradient(
+      68% 58% at 50% 42%,
+      color-mix(in oklab, var(--plasma) 7%, transparent),
+      transparent 72%
+    ),
+    var(--muted);
+}
+
+.product-stage-dark {
+  background:
+    radial-gradient(
+      68% 58% at 50% 42%,
+      color-mix(in oklab, var(--cyo) 9%, transparent),
+      transparent 72%
+    ),
+    color-mix(in oklab, var(--foreground) 8%, var(--muted));
+}
+
+.dark .product-stage-dark {
+  background:
+    radial-gradient(
+      68% 58% at 50% 42%,
+      color-mix(in oklab, var(--cyo) 12%, transparent),
+      transparent 72%
+    ),
+    #0b0b18;
+}

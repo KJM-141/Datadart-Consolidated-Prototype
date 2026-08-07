@@ -1,12 +1,18 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { EASE_ADV } from "@/lib/advanced-motion";
+import { PATHS } from "@/lib/nav";
 
 /**
  * Re-mounts on every route change inside the console, which is what makes this
  * an entrance rather than a layout. Content warps in behind a light sweep that
  * crosses it once as it lands.
+ *
+ * The command centre opts out. It is the viewport rather than a page in one,
+ * and blurring the whole screen in — bar, rails and all — reads as a page load
+ * rather than an arrival. Its own regions animate themselves.
  */
 export default function ConsoleTemplate({
   children,
@@ -14,6 +20,9 @@ export default function ConsoleTemplate({
   children: React.ReactNode;
 }) {
   const reduce = useReducedMotion();
+  const pathname = usePathname();
+  const bare = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  if (bare === PATHS.dashboard) return <>{children}</>;
 
   return (
     <motion.div

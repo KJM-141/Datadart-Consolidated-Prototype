@@ -1,7 +1,7 @@
 "use client";
 
-import { ChangePasswordAdvanced } from "@/components/advanced/pages/change-password";
+import { ChangePasswordPage } from "@/components/centre/pages/change-password";
 
 export default function Page() {
-  return <ChangePasswordAdvanced />;
+  return <ChangePasswordPage />;
 }

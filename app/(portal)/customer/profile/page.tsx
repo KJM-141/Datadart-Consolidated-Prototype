@@ -1,7 +1,7 @@
 "use client";
 
-import { ProfileAdvanced } from "@/components/advanced/pages/profile";
+import { ProfilePage } from "@/components/centre/pages/profile";
 
 export default function Page() {
-  return <ProfileAdvanced />;
+  return <ProfilePage />;
 }

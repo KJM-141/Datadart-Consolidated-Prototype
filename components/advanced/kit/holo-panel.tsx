@@ -72,7 +72,11 @@ export const HoloPanel = forwardRef<HTMLDivElement, HoloPanelProps>(
             aria-hidden
             className="pointer-events-none absolute inset-x-0 top-0 z-2 h-24 overflow-hidden rounded-[inherit]"
           >
-            <span className="adv-scan block h-full w-full bg-[linear-gradient(180deg,transparent,color-mix(in_oklab,var(--cyo)_22%,transparent),transparent)]" />
+            {/* Halved. At 22% the sweep was the brightest thing on a panel
+                whose job is to report a number, and several of these run at
+                once on a page. It should read as the surface being alive, not
+                as an animation. */}
+            <span className="adv-scan block h-full w-full bg-[linear-gradient(180deg,transparent,color-mix(in_oklab,var(--cyo)_11%,transparent),transparent)]" />
           </span>
         )}
         {children}

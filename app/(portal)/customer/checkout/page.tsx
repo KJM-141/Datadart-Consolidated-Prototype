@@ -1,7 +1,7 @@
 "use client";
 
-import { CartAdvanced } from "@/components/advanced/pages/cart";
+import { CartPage } from "@/components/centre/pages/cart";
 
 export default function Page() {
-  return <CartAdvanced />;
+  return <CartPage />;
 }

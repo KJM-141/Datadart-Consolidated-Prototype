@@ -1,7 +1,7 @@
 "use client";
 
-import { ResourcesAdvanced } from "@/components/advanced/pages/resources";
+import { ResourcesPage } from "@/components/centre/pages/resources";
 
 export default function Page() {
-  return <ResourcesAdvanced />;
+  return <ResourcesPage />;
 }

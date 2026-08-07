@@ -1,7 +1,7 @@
 "use client";
 
-import { OrdersAdvanced } from "@/components/advanced/pages/orders";
+import { TransfersPage } from "@/components/centre/pages/transfers";
 
 export default function Page() {
-  return <OrdersAdvanced />;
+  return <TransfersPage />;
 }

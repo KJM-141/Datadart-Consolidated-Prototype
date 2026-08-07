@@ -1,13 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Inter_Tight } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const interTight = Inter_Tight({
-  variable: "--font-inter-tight",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+/**
+ * Poppins is the single typeface across the whole product — the same family,
+ * the same five weights and the same self-hosted files as the DataDart
+ * reference build, so the two prototypes set type identically.
+ *
+ * Self-hosted rather than fetched from `next/font/google` on purpose: the
+ * console has to build and render with no network, and these are the exact
+ * files the reference already ships.
+ */
+const poppins = localFont({
+  src: [
+    { path: "./fonts/poppins-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/poppins-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/poppins-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/poppins-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/poppins-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-poppins",
+  display: "swap",
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -55,7 +71,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${interTight.variable} ${plexMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${plexMono.variable}`}>
       <body className="antialiased">
         <ThemeProvider
           attribute="class"

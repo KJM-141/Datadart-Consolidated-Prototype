@@ -1,7 +1,7 @@
 "use client";
 
-import { SubscriptionAdvanced } from "@/components/advanced/pages/subscription";
+import { SubscriptionsPage } from "@/components/centre/pages/subscriptions";
 
 export default function Page() {
-  return <SubscriptionAdvanced />;
+  return <SubscriptionsPage />;
 }

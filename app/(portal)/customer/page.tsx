@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardAdvanced } from "@/components/advanced/pages/dashboard";
+import { CommandCentre } from "@/components/centre/command-centre";
 
 export default function Page() {
-  return <DashboardAdvanced />;
+  return <CommandCentre />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { ProductsAdvanced } from "@/components/advanced/pages/products";
+import { HardwarePage } from "@/components/centre/pages/hardware";
 
 export default function Page() {
-  return <ProductsAdvanced />;
+  return <HardwarePage />;
 }

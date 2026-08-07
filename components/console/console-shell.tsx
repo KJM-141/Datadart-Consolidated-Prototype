@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuroraCanvas } from "@/components/advanced/kit/aurora-canvas";
 import { DeckPalette } from "@/components/advanced/shell/deck-palette";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { PATHS } from "@/lib/nav";
@@ -55,13 +54,15 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         console read as dead black. The rails and bars are translucent for the
         same reason — the night has to be visible through the frame, not just
         around it.
+
+        Reduced to the base gradient. The drifting starfield, the aurora
+        particle field, the HUD grid and the grain were four animated layers
+        behind every page of a logistics console — texture competing with the
+        figures it sat behind. `nightfall` alone keeps the depth without any of
+        the noise, and takes a canvas render loop off every route.
       */}
       <div aria-hidden className="deck-ambience">
         <div className="nightfall" />
-        <div className="starfield starfield-drift" />
-        <AuroraCanvas density={4.5} link={140} opacity={0.5} interactive={110} />
-        <div className="hud-grid absolute inset-0 opacity-25" />
-        <div className="deck-grain" />
       </div>
 
       <TopBar

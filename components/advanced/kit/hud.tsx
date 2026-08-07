@@ -341,11 +341,16 @@ export function PageHeading({
       >
         <div className="min-w-0">
           {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-          <h1 className="mt-2.5 text-[1.75rem] font-semibold leading-[1.12] sm:text-[2.125rem]">
+          {/* Was 1.75rem rising to 2.125rem. A 34px title above a 13.5px lead
+              paragraph put two display weights in front of every page before
+              any content, on a console where the content is the point. The
+              inner pages now open at the same scale as the command centre's
+              panel heads, which is what makes them read as one product. */}
+          <h1 className="mt-2 text-[19px] font-semibold leading-tight sm:text-[21px]">
             {title}
           </h1>
           {description && (
-            <p className="mt-2.5 max-w-2xl text-[13.5px] leading-[1.65] text-muted-foreground">
+            <p className="mt-1.5 max-w-2xl text-[12.5px] leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}
@@ -354,7 +359,7 @@ export function PageHeading({
           <div className="flex flex-wrap items-center gap-2">{actions}</div>
         )}
       </motion.div>
-      <motion.div variants={bloomSoft} className="mt-6">
+      <motion.div variants={bloomSoft} className="mt-4">
         <HudRule />
       </motion.div>
     </motion.header>
