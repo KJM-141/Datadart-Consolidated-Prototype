@@ -89,9 +89,17 @@ export function DashboardAdvanced() {
   const greeting =
     hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-  // Persisted state is not available during SSR, so the first paint is always
-  // the default view; the toggle settles once the store rehydrates.
-  const active: DashboardView = mounted ? view : "dashboard";
+  /*
+    Read straight through — no `mounted` guard.
+
+    This used to fall back to "dashboard" until mount, because the view was
+    persisted and persisted state is not available during SSR. It is session
+    state now (see `partialize` in lib/store.ts), so the value is the store's
+    own default on the server and on the first client paint alike: deterministic,
+    no hydration mismatch, and no flash of the dashboard before the guided view
+    takes over.
+  */
+  const active: DashboardView = view;
 
   return (
     <motion.div

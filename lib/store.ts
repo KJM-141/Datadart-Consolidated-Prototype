@@ -33,8 +33,9 @@ interface AppState {
   /** Right-rail sections the user has folded away, keyed by RailSection id.
    *  Persisted: a panel you closed should stay closed on the next visit. */
   railCollapsed: Record<string, boolean>;
-  /** Overview route surface. Defaults to the dashboard for everyone; the
-   *  guided tour is always one toggle away rather than gated on being new. */
+  /** Overview route surface. Opens on the guided view every visit — session
+   *  state, never persisted, so the toggle is a detour and not a decision.
+   *  See `partialize` below. */
   dashboardView: DashboardView;
   /** How many times the floating assistant has offered help unprompted. Capped
    *  so the nudge is a courtesy rather than a nag. */
@@ -93,7 +94,7 @@ export const useAppStore = create<AppState>()(
       cart: [],
 
       railCollapsed: {},
-      dashboardView: "dashboard",
+      dashboardView: "guided",
       assistantNudgeSeen: 0,
 
       toggleRailSection: (id) =>
@@ -191,9 +192,26 @@ export const useAppStore = create<AppState>()(
       name: "datadart-prototype",
       // v2 introduced the 2.0 order model, v3 the persisted Conversations
       // queue, v4 the Ultra agentic state, v5 the rail/dashboard/assistant UI
-      // preferences. Older payloads carry shapes we can't render, so we drop
-      // the stale records and reseed rather than show broken rows.
-      version: 5,
+      // preferences, v6 stopped persisting the overview view. Older payloads
+      // carry shapes we can't render, so we drop the stale records and reseed
+      // rather than show broken rows.
+      version: 6,
+
+      /**
+       * `dashboardView` is deliberately session state, not a preference.
+       *
+       * Every visit is meant to open on *Get started* — so it must not be
+       * written to storage, or the first time anyone switched to the dashboard
+       * that choice would become permanent and the guided view would never be
+       * seen again. Omitting it here means the store's own default is what a
+       * fresh load gets, every time.
+       */
+      partialize: (state) => {
+        const persisted = { ...state };
+        delete (persisted as Partial<AppState>).dashboardView;
+        return persisted;
+      },
+
       migrate: (persisted) => {
         const prev = (persisted ?? {}) as Partial<AppState>;
         return {
@@ -203,11 +221,14 @@ export const useAppStore = create<AppState>()(
           conversations: DEMO_CONVERSATIONS,
           cart: [],
           // Spelled out rather than left to the `...prev` spread: persist's
-          // merge is a shallow overwrite, so a pre-v5 payload would otherwise
+          // merge is a shallow overwrite, so an older payload would otherwise
           // leave these `undefined` and every read would have to guard.
           railCollapsed: prev.railCollapsed ?? {},
-          dashboardView: prev.dashboardView ?? "dashboard",
           assistantNudgeSeen: prev.assistantNudgeSeen ?? 0,
+          // Overwritten, not carried: a pre-v6 payload may hold "dashboard",
+          // and letting that through would pin the landing view for exactly the
+          // visitors who have used the app before.
+          dashboardView: "guided",
         } as AppState;
       },
     },

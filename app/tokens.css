@@ -147,17 +147,43 @@
   --sidebar-border: rgb(168 160 235 / 12%);
 }
 
+/*
+  Typeface, set once.
+
+  Poppins is the single family across the product; `globals.css` points
+  `--font-sans` and `--font-heading` at it and declares the two font-family
+  rules. This file is imported LAST, so anything it says about type wins — which
+  is why the tracking and the feature settings live here rather than there.
+
+  They were tuned for Inter Tight, and two of the values do not carry over:
+
+    · `ss01` is one of Inter Tight's stylistic sets. Poppins has no ss01, so the
+      declaration was either inert or asking for a set that means something else
+      entirely. Only `tnum` survives, and that one genuinely matters — every
+      figure in this product sits in a column.
+    · Poppins is a geometric sans with much wider sidebearings than the grotesk
+      it replaced, so it needs *more* negative tracking, not less, or headings
+      lose their block at display sizes.
+*/
 body {
   background-color: var(--background);
-  /* Inter Tight, slightly tighter than default so the
-     display sizes hold together without looking condensed. */
-  letter-spacing: -0.006em;
-  font-feature-settings: "tnum", "ss01";
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.011em;
+  font-feature-settings: "tnum";
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
 }
 
 h1,
 h2 {
-  letter-spacing: -0.022em;
+  letter-spacing: -0.028em;
 }
 
 ::selection {
