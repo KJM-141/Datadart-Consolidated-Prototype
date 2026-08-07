@@ -21,6 +21,9 @@ const ROUTES = [
   "/customer/subscriptions/", "/customer/checkout/", "/customer/profile/",
   "/customer/sizer/", "/customer/start/", "/customer/conversations/",
   "/customer/resources/", "/customer/history/DD-2026-0187/",
+  // A product page carries a permanently-mounted sticky purchase bar, so it is
+  // the one route where a fixed element could plausibly push the frame around.
+  "/customer/hardware/bryck/",
 ];
 const WIDTHS = [1512, 1280, 1024, 768, 390];
 

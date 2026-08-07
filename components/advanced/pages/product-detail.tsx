@@ -102,7 +102,7 @@ function Content({ product }: { product: Product }) {
       variants={deckStagger(0.06)}
       initial="hidden"
       animate="show"
-      className={cn("space-y-6", subscribeMode && "pb-24")}
+      className="space-y-6"
     >
       <motion.div variants={bloomSoft}>
         <Link
@@ -269,20 +269,20 @@ function Content({ product }: { product: Product }) {
             </motion.div>
           )}
 
-          {subscribeMode && (
-            <motion.div variants={bloomSoft} className="flex items-baseline gap-2">
-              <span className="text-[2.4rem] font-semibold leading-none tracking-tight plasma-text">
-                <Rate
-                  usd={product.monthlyCost}
-                  from={product.priceNote === "from"}
-                  unit=""
-                />
-              </span>
-              {product.monthlyCost > 0 && (
-                <span className="text-sm text-muted-foreground">/ month</span>
-              )}
-            </motion.div>
-          )}
+          {/* The rate is a fact about the device, not a fact about how you
+              arrived at it. */}
+          <motion.div variants={bloomSoft} className="flex items-baseline gap-2">
+            <span className="text-[2.4rem] font-semibold leading-none tracking-tight plasma-text">
+              <Rate
+                usd={product.monthlyCost}
+                from={product.priceNote === "from"}
+                unit=""
+              />
+            </span>
+            {product.monthlyCost > 0 && (
+              <span className="text-sm text-muted-foreground">/ month</span>
+            )}
+          </motion.div>
 
           {/* spec tables */}
           {product.specs.map((group) => (
@@ -332,42 +332,76 @@ function Content({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* ── Sticky subscribe bar ─────────────────────────────────── */}
-      {subscribeMode && (
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 28, delay: 0.2 }}
-          className="fixed inset-x-0 bottom-0 z-30 px-3 pb-3 sm:px-4 sm:pb-4"
-        >
-          <div className="holo mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-semibold plasma-text">
-                <Rate
-                  usd={product.monthlyCost}
-                  from={product.priceNote === "from"}
-                  unit=""
-                />
-              </span>
-              {product.monthlyCost > 0 && (
-                <span className="text-[11px] text-muted-foreground">/ month</span>
-              )}
-              {capacity && <Pill tone="cyo">{capacity} TB</Pill>}
-            </div>
-            <div className="flex items-center gap-3">
-              <HudLabel>Qty</HudLabel>
-              <QtyStepper value={qty} onChange={setQty} />
-              <button
-                ref={addBtnRef}
-                onClick={handleAdd}
-                className="btn-plasma inline-flex h-11 items-center gap-2 px-6 text-[13px] font-medium"
-              >
-                <ShoppingCart className="size-4" /> Add to cart
-              </button>
-            </div>
+      {/*
+        ── Sticky subscribe bar ───────────────────────────────────
+        Unconditional, and that is the fix for a customer-reported bug: you
+        could not add hardware to the cart.
+
+        It used to render only when the URL carried `?mode=subscribe`, and the
+        only links that passed that were on the cart page. So every other door
+        into the catalogue — the right rail's "All", the left nav's Hardware,
+        even the rail cart's own "Browse hardware" empty state — landed you on a
+        product page with no way to buy it. To fill an empty cart you had to
+        already be at the cart.
+
+        A catalogue does not get to refuse a sale based on which link you
+        followed. `subscribeMode` still tunes the copy and the back-link, which
+        is a legitimate thing for context to change; it no longer decides
+        whether commerce exists.
+      */}
+      {/*
+        `sticky`, not `fixed`.
+
+        Sticky resolves against the nearest scrolling ancestor — `main` — so it
+        cannot be knocked out of position by a filter or transform higher up the
+        tree, which is exactly what happened here. It also stops the bar
+        stretching under the nav rail, which a viewport-fixed `inset-x-0` did,
+        and it occupies its own space in flow so nothing needs padding to clear
+        it.
+      */}
+      <motion.div
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 28, delay: 0.2 }}
+        className="sticky bottom-0 z-30 -mx-1 px-1 pb-1"
+      >
+          {/*
+          `holo-solid` — the documented opaque variant — because glass over a
+          scrolling spec table put six rows of small print behind the price and
+          the only button on the page.
+
+          `pr-20` keeps the CTA clear of the assistant dock, which is fixed in
+          this same corner at 52px plus a 20px inset. Two affordances competing
+          for one corner is a layout fact, so the bar yields rather than the
+          floating one moving.
+        */}
+        <div className="holo holo-solid mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 pr-20 sm:px-5 sm:pr-20">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-semibold plasma-text">
+              <Rate
+                usd={product.monthlyCost}
+                from={product.priceNote === "from"}
+                unit=""
+              />
+            </span>
+            {product.monthlyCost > 0 && (
+              <span className="text-[11px] text-muted-foreground">/ month</span>
+            )}
+            {capacity && <Pill tone="cyo">{capacity} TB</Pill>}
           </div>
-        </motion.div>
-      )}
+          <div className="flex items-center gap-3">
+            <HudLabel>Qty</HudLabel>
+            <QtyStepper value={qty} onChange={setQty} />
+            <button
+              ref={addBtnRef}
+              onClick={handleAdd}
+              className="btn-plasma inline-flex h-11 items-center gap-2 px-6 text-[13px] font-medium"
+            >
+              <ShoppingCart className="size-4" /> Add to cart
+            </button>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
