@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { Logo } from "@/components/brand/logo";
 import { HudLabel } from "@/components/advanced/kit/hud";
-import { Magnetic } from "@/components/advanced/kit/interactions";
 import { isActivePath, NAV_GROUPS, PATHS } from "@/lib/nav";
 import { useAppStore, useMounted } from "@/lib/store";
 import { deckStagger, driftIn, springSnap } from "@/lib/advanced-motion";
@@ -45,12 +44,6 @@ export function NavRail({
         className,
       )}
     >
-      {/* A whisper of plasma at the head of the rail, not a wash. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(80%_60%_at_50%_0%,color-mix(in_oklab,var(--plasma)_9%,transparent),transparent_72%)]"
-      />
-
       {/* Brand sits at the same 56px as the top bar so the two align exactly,
           and centred in the column rather than hung off its left edge. */}
       <div className="relative flex h-14 shrink-0 items-center justify-center border-b border-hair px-4">
@@ -72,7 +65,9 @@ export function NavRail({
 
               return (
                 <motion.div key={item.href} variants={driftIn}>
-                  <Magnetic strength={0.14} radius={64} className="w-full">
+                  {/* No Magnetic pointer-follow. A nav where every row leans
+                      toward the cursor is fidgety in a tool you use all day; the
+                      sliding capsule and hover colour carry the affordance. */}
                     <Link
                       href={item.href}
                       onClick={onNavigate}
@@ -117,7 +112,6 @@ export function NavRail({
                         </span>
                       )}
                     </Link>
-                  </Magnetic>
                 </motion.div>
               );
             })}

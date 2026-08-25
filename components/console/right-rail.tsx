@@ -1,19 +1,24 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpRight,
+  Bell,
   CalendarClock,
   ChevronDown,
   CircleMinus,
   FileSignature,
+  Package,
+  PanelRightClose,
+  Radar,
   ShieldCheck,
   ShoppingCart,
   Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import { HudLabel, LiveDot, Pill } from "@/components/advanced/kit/hud";
 import { needsYou, railSections, type RailSection } from "@/lib/rail-spec";
@@ -22,62 +27,241 @@ import { PRODUCTS, productStage } from "@/lib/products";
 import { fmtUSD } from "@/lib/pricing";
 import { stageIndex, STAGES } from "@/lib/lifecycle";
 import { cartKey, useAppStore, useMounted } from "@/lib/store";
-import {
-  bloomSoft,
-  deckStagger,
-  EASE_ADV,
-  useSafeReducedMotion,
-} from "@/lib/advanced-motion";
+import { EASE_ADV, useSafeReducedMotion } from "@/lib/advanced-motion";
 import { cn } from "@/lib/utils";
 
 /**
  * ── The right rail ────────────────────────────────────────────────────────
  *
- * 352px, and the overview's alone — see `lib/rail-spec.ts` for why it stopped
- * following you onto every route. Four sections: what is in the cart, what
- * needs you, what is moving, and the catalogue.
+ * Expandable. Collapsed, it is a strip of icons — one per section — so the
+ * overview stays uncluttered. Press an icon and the rail opens with that
+ * section's panel showing; the sections then behave as an accordion, one open
+ * at a time. A collapse control returns it to the strip.
  *
- * The catalogue is the Vercel app's contribution to the blend: hardware stays
- * beside you on the screen you plan from, instead of being a place you navigate
- * to.
- *
- * Every section folds, and the choice persists.
+ * The four sections: what needs you, what is in the cart, what is moving, and
+ * the catalogue (hardware beside you on the screen you plan from).
  */
-export function RightRail({ className }: { className?: string }) {
+
+const META: Record<RailSection, { label: string; icon: LucideIcon }> = {
+  "needs-you": { label: "Needs you", icon: Bell },
+  cart: { label: "Cart", icon: ShoppingCart },
+  active: { label: "Active transfers", icon: Radar },
+  product: { label: "Hardware", icon: Package },
+};
+
+export function RightRail({
+  className,
+  /** The mobile sheet is always open — no icon strip there. */
+  forceExpanded = false,
+}: {
+  className?: string;
+  forceExpanded?: boolean;
+}) {
   const pathname = usePathname();
   const sections = railSections(pathname);
+  const mounted = useMounted();
+
+  const [expanded, setExpanded] = useState(forceExpanded);
+  const [open, setOpen] = useState<RailSection>(sections[0]);
+  const isExpanded = forceExpanded || expanded;
+
+  const openSection = (id: RailSection) => {
+    setOpen(id);
+    setExpanded(true);
+  };
 
   return (
-    <motion.aside
-      variants={deckStagger(0.04, 0.06)}
-      initial="hidden"
-      animate="show"
+    <aside
       aria-label="Panel"
-      className={cn("h-full flex-col overflow-y-auto bg-chrome", className)}
+      style={
+        forceExpanded
+          ? undefined
+          : (() => {
+              const w = isExpanded ? "22rem" : "3.5rem";
+              // width alone gets shrunk by the flex row here; pin min-width too.
+              return { width: w, minWidth: w };
+            })()
+      }
+      className={cn(
+        "h-full flex-col overflow-y-auto bg-chrome transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        className,
+      )}
     >
-      {sections.map((s) => (
-        <Section key={s} id={s} />
-      ))}
-    </motion.aside>
+      {isExpanded ? (
+        <>
+          {!forceExpanded && (
+            <div className="flex h-11 shrink-0 items-center justify-between border-b border-hair px-4">
+              <HudLabel className="text-ink-3">Panel</HudLabel>
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                aria-label="Collapse panel"
+                className="grid size-7 place-items-center rounded-md text-ink-3 transition-colors hover:bg-accent hover:text-ink"
+              >
+                <PanelRightClose className="size-4" />
+              </button>
+            </div>
+          )}
+          {sections.map((s) => (
+            <Accordion
+              key={s}
+              id={s}
+              open={open === s}
+              onToggle={() => setOpen((cur) => (cur === s ? cur : s))}
+              badge={mounted ? <SectionBadge id={s} /> : null}
+            />
+          ))}
+        </>
+      ) : (
+        // ── Collapsed: icon strip ──────────────────────────────────────────
+        <div className="flex flex-col items-center gap-1 py-3">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            aria-label="Expand panel"
+            className="mb-1 grid size-10 place-items-center rounded-lg text-ink-3 transition-colors hover:bg-accent hover:text-ink"
+          >
+            <PanelRightClose className="size-4 rotate-180" />
+          </button>
+          {sections.map((s) => {
+            const { label, icon: Icon } = META[s];
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => openSection(s)}
+                title={label}
+                aria-label={label}
+                className="relative grid size-10 place-items-center rounded-lg text-ink-2 transition-colors hover:bg-accent hover:text-ink"
+              >
+                <Icon className="size-4.5" />
+                {mounted && <IconBadge id={s} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </aside>
   );
 }
 
-function Section({ id }: { id: RailSection }) {
+/* ── Section registry ─────────────────────────────────────────────────────── */
+
+function Body({ id }: { id: RailSection }) {
   switch (id) {
     case "needs-you":
-      return <NeedsYou />;
+      return <NeedsYouBody />;
     case "product":
-      return <ProductPanel />;
+      return <HardwareBody />;
     case "active":
-      return <ActiveTransfers />;
+      return <ActiveBody />;
     case "cart":
-      return <CartPanel />;
+      return <CartBody />;
   }
+}
+
+/** Header accessory for the expanded accordion (count / live pill). */
+function SectionBadge({ id }: { id: RailSection }) {
+  const orders = useAppStore((s) => s.orders);
+  const cart = useAppStore((s) => s.cart);
+  if (id === "needs-you") {
+    const n = needsYou(orders).length;
+    return n > 0 ? <Pill tone="plasma">{n}</Pill> : null;
+  }
+  if (id === "cart") {
+    const units = cart.reduce((n, i) => n + i.qty, 0);
+    return units > 0 ? <Pill tone="plasma">{units}</Pill> : null;
+  }
+  if (id === "active") {
+    return (
+      <Pill tone="cyo">
+        <LiveDot /> live
+      </Pill>
+    );
+  }
+  return null;
+}
+
+/** Small count dot on a collapsed icon. */
+function IconBadge({ id }: { id: RailSection }) {
+  const orders = useAppStore((s) => s.orders);
+  const cart = useAppStore((s) => s.cart);
+  let n = 0;
+  if (id === "needs-you") n = needsYou(orders).length;
+  else if (id === "cart") n = cart.reduce((a, i) => a + i.qty, 0);
+  if (n <= 0) return null;
+  return (
+    <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full plasma-fill px-1 font-mono text-[9px] font-medium text-white">
+      {n}
+    </span>
+  );
+}
+
+/* ── Bits ─────────────────────────────────────────────────────────────────── */
+
+function Accordion({
+  id,
+  open,
+  onToggle,
+  badge,
+}: {
+  id: RailSection;
+  open: boolean;
+  onToggle: () => void;
+  badge: React.ReactNode;
+}) {
+  const reduce = useSafeReducedMotion();
+  const { label, icon: Icon } = META[id];
+
+  return (
+    <section className="border-b border-hair last:border-b-0">
+      <div className="flex items-center justify-between gap-2 bg-sunk/70 px-4 py-2.5">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="group flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          <Icon className="size-3.5 shrink-0 text-ink-3" />
+          <HudLabel className="truncate">{label}</HudLabel>
+          <ChevronDown
+            aria-hidden
+            className={cn(
+              "size-3 shrink-0 text-ink-3 transition-transform duration-300 group-hover:text-ink-2",
+              !open && "-rotate-90",
+            )}
+          />
+        </button>
+        {badge && <div className="shrink-0">{badge}</div>}
+      </div>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.26, ease: EASE_ADV }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-5 pt-1">
+              <Body id={id} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <p className="text-[12px] leading-relaxed text-ink-3">{children}</p>;
 }
 
 /* ══════════════════════════════ Needs you ════════════════════════════════ */
 
-function NeedsYou() {
+function NeedsYouBody() {
   const orders = useAppStore((s) => s.orders);
   const mounted = useMounted();
   const items = useMemo(() => (mounted ? needsYou(orders) : []), [orders, mounted]);
@@ -89,76 +273,58 @@ function NeedsYou() {
     stalled: CalendarClock,
   } as const;
 
+  if (items.length === 0) {
+    return (
+      <Empty>
+        Nothing outstanding. Every open transfer is signed, settled to its current
+        stage and moving.
+      </Empty>
+    );
+  }
   return (
-    <Panel
-      id="needs-you"
-      label="Needs you"
-      head={items.length > 0 && <Pill tone="plasma">{items.length}</Pill>}
-    >
-      {items.length === 0 ? (
-        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-2">
-          Nothing outstanding. Every open transfer is signed, settled to its
-          current stage and moving.
-        </p>
-      ) : (
-        <ul className="mt-3 space-y-1">
-          {items.slice(0, 5).map((a) => {
-            const Icon = icon[a.kind];
-            return (
-              <li key={a.id}>
-                <Link
-                  href={a.href}
-                  className="group flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-accent"
-                >
-                  <Icon
-                    className={cn(
-                      "mt-0.5 size-3.5 shrink-0",
-                      a.blocking ? "text-(--plasma)" : "text-ink-3",
-                    )}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[12.5px] leading-snug">
-                      {a.title}
-                    </span>
-                    <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
-                      {a.displayId}
-                    </span>
-                  </span>
-                  <ArrowUpRight className="mt-0.5 size-3 shrink-0 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </Panel>
+    <ul className="space-y-1">
+      {items.slice(0, 5).map((a) => {
+        const Icon = icon[a.kind];
+        return (
+          <li key={a.id}>
+            <Link
+              href={a.href}
+              className="group flex items-start gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-accent"
+            >
+              <Icon
+                className={cn(
+                  "mt-0.5 size-3.5 shrink-0",
+                  a.blocking ? "text-(--plasma)" : "text-ink-3",
+                )}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12.5px] leading-snug">{a.title}</span>
+                <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
+                  {a.displayId}
+                </span>
+              </span>
+              <ArrowUpRight className="mt-0.5 size-3 shrink-0 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100" />
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
-/* ═════════════════════════════ Product panel ═════════════════════════════ */
+/* ═════════════════════════════ Hardware ══════════════════════════════════ */
 
-/**
- * The catalogue, docked. This is the Vercel app's contribution to the blend:
- * hardware stays beside you while you size, price and check out, instead of
- * being somewhere you have to go.
- */
-function ProductPanel() {
+function HardwareBody() {
   const addToCart = useAppStore((s) => s.addToCart);
 
   return (
-    <Panel
-      id="product"
-      label="Hardware"
-      head={
-        <Link
-          href={PATHS.hardware}
-          className="text-[11px] text-(--plasma) hover:underline"
-        >
-          All
+    <>
+      <div className="mb-2 flex justify-end">
+        <Link href={PATHS.hardware} className="text-[11px] text-(--plasma) hover:underline">
+          All hardware
         </Link>
-      }
-    >
-      <ul className="mt-3 space-y-2">
+      </div>
+      <ul className="space-y-2">
         {PRODUCTS.map((p) => {
           const capacity = p.capacities?.[p.capacities.length - 1];
           return (
@@ -167,16 +333,8 @@ function ProductPanel() {
               className={cn("rounded-lg p-2.5 ring-1 ring-inset ring-hair", productStage(p))}
             >
               <div className="flex items-start gap-3">
-                {/* The hardware, actually shown. A catalogue of names is a list;
-                    a catalogue with the objects on it is a catalogue. */}
                 <span className="relative size-11 shrink-0 overflow-hidden rounded-md bg-sunk ring-1 ring-inset ring-hair">
-                  <Image
-                    src={p.image}
-                    alt=""
-                    fill
-                    sizes="44px"
-                    className="object-contain p-1"
-                  />
+                  <Image src={p.image} alt="" fill sizes="44px" className="object-contain p-1" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <Link
@@ -190,10 +348,6 @@ function ProductPanel() {
                   </p>
                 </div>
               </div>
-
-              {/* Was a full-width filled bar per card, which made three stacked
-                  catalogue tiles read as three competing CTAs. A text action
-                  carries the same affordance at a third of the weight. */}
               {capacity && (
                 <button
                   type="button"
@@ -217,39 +371,23 @@ function ProductPanel() {
           );
         })}
       </ul>
-    </Panel>
+    </>
   );
 }
 
-/* ═══════════════════════════════ Operations ══════════════════════════════ */
+/* ═══════════════════════════════ Active ══════════════════════════════════ */
 
-/**
- * Was "Signals", which named the mechanism rather than the content — the list
- * is simply the transfers currently in flight, so it says that now.
- *
- * Capped at four. The rail is a glance, not the transfers table: an uncapped
- * list pushed every section below it off-screen as the book grew, and the
- * remainder is one click away in the header.
- */
 const ACTIVE_SHOWN = 4;
 
-function ActiveTransfers() {
+function ActiveBody() {
   const orders = useAppStore((s) => s.orders);
   const mounted = useMounted();
   const live = mounted ? orders.filter((o) => !o.closed) : [];
   const hidden = live.length - ACTIVE_SHOWN;
 
   return (
-    <Panel
-      id="active"
-      label="Active transfers"
-      head={
-        <Pill tone="cyo">
-          <LiveDot /> live
-        </Pill>
-      }
-    >
-      <ul className="mt-3 space-y-2.5">
+    <>
+      <ul className="space-y-2.5">
         {live.slice(0, ACTIVE_SHOWN).map((o) => (
           <li key={o.displayId}>
             <Link href={PATHS.transfer(o.displayId)} className="group block">
@@ -259,8 +397,6 @@ function ActiveTransfers() {
                   {o.volumeTB.toLocaleString()} TB
                 </span>
               </div>
-              {/* No pin icon: the arrow already says "route", and a marker on
-                  every row was three dozen pixels of decoration per screen. */}
               <p className="mt-0.5 truncate text-[12px] text-ink-2 transition-colors group-hover:text-ink">
                 {o.source.label} → {o.destination.label}
               </p>
@@ -285,194 +421,78 @@ function ActiveTransfers() {
           {hidden} more →
         </Link>
       )}
-    </Panel>
+    </>
   );
 }
 
 /* ════════════════════════════════ Cart ═══════════════════════════════════ */
 
-/**
- * The manifest, docked at the head of the rail.
- *
- * It replaced a static Assistant blurb that repeated the same three sentences on
- * every route — and before it existed, the only acknowledgement that you had
- * added anything was a badge in a nav rail two columns away.
- *
- * Seated first because it is the section whose contents you changed most
- * recently. At the foot of the rail it fell below whatever the route added, so
- * on the hardware pages the confirmation sat underneath the catalogue that
- * produced it, off-screen at the moment you pressed the button.
- */
-function CartPanel() {
+function CartBody() {
   const cart = useAppStore((s) => s.cart);
   const removeFromCart = useAppStore((s) => s.removeFromCart);
   const mounted = useMounted();
   const items = mounted ? cart : [];
-
-  const units = items.reduce((n, i) => n + i.qty, 0);
   const monthly = items.reduce((n, i) => n + i.monthlyRate * i.qty, 0);
 
-  return (
-    <Panel
-      id="cart"
-      label="Cart"
-      icon={ShoppingCart}
-      head={units > 0 && <Pill tone="plasma">{units}</Pill>}
-    >
-      {items.length === 0 ? (
-        <>
-          <Empty>Nothing on the manifest yet.</Empty>
-          <Link
-            href={PATHS.hardware}
-            className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-(--plasma) hover:underline"
-          >
-            Browse hardware <ArrowUpRight className="size-3" />
-          </Link>
-        </>
-      ) : (
-        <>
-          <ul className="mt-3 space-y-2">
-            {items.map((i) => (
-              <li
-                key={cartKey(i)}
-                className="group flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-accent"
-              >
-                <span className="relative size-9 shrink-0 overflow-hidden rounded-md bg-sunk ring-1 ring-inset ring-hair">
-                  <Image
-                    src={i.image}
-                    alt=""
-                    fill
-                    sizes="36px"
-                    className="object-contain p-0.5"
-                  />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[12.5px] leading-snug">
-                    {i.model}
-                  </span>
-                  <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
-                    {i.detail} · ×{i.qty}
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => removeFromCart(cartKey(i))}
-                  aria-label={`Remove ${i.model} from cart`}
-                  className="shrink-0 text-ink-3 opacity-0 transition-all hover:text-(--plasma) focus-visible:opacity-100 group-hover:opacity-100"
-                >
-                  <CircleMinus className="size-3.5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Two of the three catalogue entries carry no list rate, so a
-              confident "$0 / month" would be a lie. Show the figure only when
-              there is one. */}
-          <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-hair pt-3">
-            <span className="text-[12px] text-ink-2">Monthly</span>
-            {monthly > 0 ? (
-              <span className="font-mono text-[12.5px] font-medium tabular-nums">
-                {fmtUSD(monthly)}
-              </span>
-            ) : (
-              <span className="text-[11px] text-ink-3">confirmed at checkout</span>
-            )}
-          </div>
-
-          <Link
-            href={PATHS.checkout}
-            className="btn-brand mt-3 flex h-9 items-center justify-center rounded-full text-[12px] font-semibold text-white"
-          >
-            Review manifest
-          </Link>
-        </>
-      )}
-    </Panel>
-  );
-}
-
-/* ══════════════════════════════════ Bits ═════════════════════════════════ */
-
-/**
- * A rail section: banded header that folds the body away.
- *
- * The rail previously separated its sections with a hairline and nothing else,
- * so eight stacked panels read as one long undifferentiated column. A sunk band
- * bled to both edges gives each section a lid — the same device a table header
- * uses, and for the same reason. The lid is now a control, and what it does is
- * remembered.
- *
- * `head` sits *outside* the disclosure button rather than inside it: several
- * sections put a link there, and an anchor nested in a button is invalid markup
- * that React refuses to hydrate.
- */
-function Panel({
-  id,
-  label,
-  icon: Icon,
-  head,
-  children,
-}: {
-  id: RailSection;
-  label: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  head?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const collapsed = useAppStore((s) => Boolean(s.railCollapsed[id]));
-  const toggleRailSection = useAppStore((s) => s.toggleRailSection);
-  const mounted = useMounted();
-  const reduce = useSafeReducedMotion();
-
-  // The collapse map is persisted, and persisted state is not available during
-  // SSR or the first client paint. Gating on `mounted` keeps both renders
-  // expanded so the markup matches, then folds once the store has rehydrated.
-  const isCollapsed = mounted && collapsed;
-
-  return (
-    <motion.section
-      variants={bloomSoft}
-      className="border-b border-hair last:border-b-0"
-    >
-      <div className="flex items-center justify-between gap-2 border-b border-hair bg-sunk/70 px-4 py-2.5">
-        <button
-          type="button"
-          onClick={() => toggleRailSection(id)}
-          aria-expanded={!isCollapsed}
-          className="group flex min-w-0 flex-1 items-center gap-2 text-left"
+  if (items.length === 0) {
+    return (
+      <>
+        <Empty>Nothing on the manifest yet.</Empty>
+        <Link
+          href={PATHS.hardware}
+          className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-medium text-(--plasma) hover:underline"
         >
-          <ChevronDown
-            aria-hidden
-            className={cn(
-              "size-3 shrink-0 text-ink-3 transition-transform duration-300 group-hover:text-ink-2",
-              isCollapsed && "-rotate-90",
-            )}
-          />
-          {Icon && <Icon className="size-3 shrink-0 text-ink-3" />}
-          <HudLabel className="truncate">{label}</HudLabel>
-        </button>
-        {head && <div className="shrink-0">{head}</div>}
+          Browse hardware <ArrowUpRight className="size-3" />
+        </Link>
+      </>
+    );
+  }
+  return (
+    <>
+      <ul className="space-y-2">
+        {items.map((i) => (
+          <li
+            key={cartKey(i)}
+            className="group flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-accent"
+          >
+            <span className="relative size-9 shrink-0 overflow-hidden rounded-md bg-sunk ring-1 ring-inset ring-hair">
+              <Image src={i.image} alt="" fill sizes="36px" className="object-contain p-0.5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[12.5px] leading-snug">{i.model}</span>
+              <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
+                {i.detail} · ×{i.qty}
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => removeFromCart(cartKey(i))}
+              aria-label={`Remove ${i.model} from cart`}
+              className="shrink-0 text-ink-3 opacity-0 transition-all hover:text-(--plasma) focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <CircleMinus className="size-3.5" />
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-hair pt-3">
+        <span className="text-[12px] text-ink-2">Monthly</span>
+        {monthly > 0 ? (
+          <span className="font-mono text-[12.5px] font-medium tabular-nums">
+            {fmtUSD(monthly)}
+          </span>
+        ) : (
+          <span className="text-[11px] text-ink-3">confirmed at checkout</span>
+        )}
       </div>
 
-      <AnimatePresence initial={false}>
-        {!isCollapsed && (
-          <motion.div
-            key="body"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: reduce ? 0 : 0.26, ease: EASE_ADV }}
-            className="overflow-hidden"
-          >
-            <div className="px-4 pb-5">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.section>
+      <Link
+        href={PATHS.checkout}
+        className="btn-brand mt-3 flex h-9 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+      >
+        Review manifest
+      </Link>
+    </>
   );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="mt-3 text-[12px] leading-relaxed text-ink-3">{children}</p>;
 }

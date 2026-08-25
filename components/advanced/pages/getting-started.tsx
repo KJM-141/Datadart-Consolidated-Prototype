@@ -278,13 +278,8 @@ export function GettingStarted() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col">
       <div className="flex items-center gap-3">
-        <span className="relative grid size-8 shrink-0 place-items-center rounded-full">
-          {!reduce && (
-            <span className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]" />
-          )}
-          <span className="absolute inset-0.5 overflow-hidden rounded-full">
-            <AssistantMark size={28} />
-          </span>
+        <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full">
+          <AssistantMark size={32} />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold leading-tight">

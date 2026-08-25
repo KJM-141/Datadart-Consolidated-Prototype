@@ -24,7 +24,8 @@ import {
 
 export const PATHS = {
   /* Public */
-  signin: "/",
+  home: "/",
+  signin: "/signin",
   signup: "/signup",
   forgot: "/forgotpassword",
   howItWorks: "/how-it-works",

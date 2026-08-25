@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AssistantDock } from "@/components/assistant/assistant-dock";
 import { DeckPalette } from "@/components/advanced/shell/deck-palette";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { PATHS } from "@/lib/nav";
+import { isActivePath, PATHS } from "@/lib/nav";
 import { railVisible } from "@/lib/rail-spec";
 import { useAppStore, useMounted } from "@/lib/store";
 import { NavRail } from "./nav-rail";
@@ -39,6 +39,11 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const railHere = railVisible(pathname);
+  // The overview's guided view *is* the assistant, and its dashboard view is a
+  // scan surface a chat launcher only crowds. A floating dock there is a second
+  // copy of the same agent on the one screen that already leads with it — so it
+  // stands down on the overview and stays available on every task route.
+  const onOverview = isActivePath(pathname, PATHS.dashboard);
 
   useEffect(() => {
     if (mounted && !signedIn) router.replace(PATHS.signin);
@@ -103,7 +108,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
             its own subject at full width, so the rail was restating it in
             miniature — twice over on the transfer detail. */}
         {railHere && (
-          <RightRail className="hidden w-[22rem] shrink-0 border-l border-chrome-edge backdrop-blur-xl xl:flex" />
+          <RightRail className="hidden shrink-0 border-l border-chrome-edge backdrop-blur-xl xl:flex" />
         )}
       </div>
 
@@ -118,7 +123,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
       <Sheet open={railHere && railOpen} onOpenChange={setRailOpen}>
         <SheetContent side="right" showCloseButton={false} className="w-[22rem] border-hair p-0">
           <SheetTitle className="sr-only">Panel</SheetTitle>
-          <RightRail className="flex" />
+          <RightRail className="flex w-full" forceExpanded />
         </SheetContent>
       </Sheet>
 
@@ -128,7 +133,7 @@ export function ConsoleShell({ children }: { children: React.ReactNode }) {
         fixed it contributes nothing to `scrollHeight`, which the layout
         contract in verify.mjs asserts is never taller than the viewport.
       */}
-      <AssistantDock />
+      {!onOverview && <AssistantDock />}
 
       <DeckPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
     </div>

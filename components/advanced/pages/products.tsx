@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import {
   ArrowUpRight,
   BookOpen,
@@ -126,7 +126,6 @@ export function DevicePod({
   product: Product;
   subscribeMode: boolean;
 }) {
-  const reduce = useReducedMotion();
   const href = `/customer/hardware/${product.slug}${subscribeMode ? "?mode=subscribe" : ""}`;
 
   return (
@@ -135,49 +134,24 @@ export function DevicePod({
         <Spotlight size={380} className="h-full rounded-(--radius)">
           <HoloPanel
             plain
-            sheen
-            className="group/pod flex h-full flex-col overflow-hidden transition-shadow duration-500 hover:shadow-[0_30px_70px_-30px_color-mix(in_oklab,var(--plasma)_70%,transparent)]"
+            className="group/pod flex h-full flex-col overflow-hidden transition-colors duration-200 hover:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--plasma)_35%,transparent),0_1px_2px_rgb(20_20_43/6%)]"
           >
-            <span aria-hidden className="sheen" />
             <Link href={href} className="relative flex h-full flex-col">
-              {/* plinth */}
+              {/* plinth — a plain lit surface, no orbit rings */}
               <div
                 className={cn(
-                  "relative m-3 h-56 overflow-hidden rounded-2xl sm:h-62",
+                  "relative m-3 h-56 overflow-hidden rounded-lg sm:h-62",
                   productStage(product),
                 )}
               >
-                {/* orbit rings behind the device */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
-                >
-                  <span
-                    className={cn(
-                      "block size-52 rounded-full border border-dashed",
-                      product.stageTone === "dark"
-                        ? "border-white/12"
-                        : "border-black/8",
-                      !reduce && "adv-orbit",
-                    )}
-                  >
-                    <span className="absolute -top-1 left-1/2 size-1.5 -translate-x-1/2 rounded-full plasma-fill shadow-[0_0_10px_2px_color-mix(in_oklab,var(--plasma)_85%,transparent)]" />
-                  </span>
-                </span>
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-8 bottom-5 h-3 rounded-[50%] bg-black/22 blur-md"
-                />
-
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
                   sizes="(max-width: 1024px) 100vw, 420px"
                   className={cn(
-                    "object-contain p-6 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/pod:scale-108",
+                    "object-contain p-6 transition-transform duration-300 ease-out group-hover/pod:scale-105",
                     product.imageAspect === "tall" && "p-4",
-                    !reduce && "adv-float-slow",
                   )}
                 />
 

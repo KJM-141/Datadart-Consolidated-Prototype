@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import { EASE_ADV } from "@/lib/advanced-motion";
 
 /**
@@ -27,29 +27,27 @@ export default function ConsoleTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  const reduce = useReducedMotion();
+  /*
+    Calm pass (2026-08-24): the entrance kept its quiet fade + rise, but the
+    full-width plasma light-sweep that crossed the whole page on *every*
+    navigation was decoration firing on every click — the kind of texture the
+    console's own notes warn against. Gone; the content still lands softly.
 
+    A shorter, smaller `y` travel too — the old 18px lift read as a lurch on
+    dense pages.
+  */
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18, filter: "blur(9px)" }}
+      initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
       animate={{
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
         transitionEnd: { filter: "none" },
       }}
-      transition={{ duration: 0.5, ease: EASE_ADV }}
+      transition={{ duration: 0.4, ease: EASE_ADV }}
       className="relative"
     >
-      {!reduce && (
-        <motion.span
-          aria-hidden
-          initial={{ x: "-40%", opacity: 0.85 }}
-          animate={{ x: "140%", opacity: 0 }}
-          transition={{ duration: 0.85, ease: EASE_ADV }}
-          className="pointer-events-none absolute inset-y-0 z-50 w-1/3 -skew-x-12 bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--plasma)_16%,transparent),transparent)]"
-        />
-      )}
       {children}
     </motion.div>
   );

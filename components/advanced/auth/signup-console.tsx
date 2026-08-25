@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
@@ -12,6 +12,7 @@ import {
   Loader2,
   Mail,
   MapPin,
+  MessageSquare,
   Phone,
   ShieldCheck,
   User,
@@ -46,6 +47,7 @@ import {
 import type { Address } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { PATHS } from "@/lib/nav";
+import { takeIntent } from "@/lib/intent";
 
 interface Step1 {
   email: string;
@@ -69,6 +71,19 @@ export function SignUpConsole() {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+
+  // A question the visitor asked on the landing hero (or the sizer) rides in
+  // via sessionStorage, so the account screen picks up the thread rather than
+  // greeting them cold. `takeIntent` reads *and clears*, so the ref guard makes
+  // it fire exactly once — otherwise StrictMode's double-invoked effect reads
+  // the value on the first pass and `null` on the second, wiping the banner.
+  const [carried, setCarried] = useState<string | null>(null);
+  const took = useRef(false);
+  useEffect(() => {
+    if (took.current) return;
+    took.current = true;
+    setCarried(takeIntent());
+  }, []);
 
   const [basic, setBasic] = useState<Step1>({
     email: "",
@@ -207,6 +222,24 @@ export function SignUpConsole() {
               Two quick steps and you&apos;re moving data.
             </p>
           </motion.div>
+
+          {/* Carried question from the landing — continuity, not a cold start. */}
+          {carried && (
+            <motion.div
+              variants={bloomSoft}
+              className="mt-5 flex items-start gap-2.5 rounded-xl bg-white/[0.04] p-3.5 text-[12px] leading-relaxed text-muted-foreground ring-1 ring-inset ring-white/8"
+            >
+              <MessageSquare className="mt-0.5 size-3.5 shrink-0 text-(--plasma)" />
+              <span>
+                Picking up from your question —{" "}
+                <span className="font-medium text-foreground">
+                  &ldquo;{carried}&rdquo;
+                </span>
+                . Create your account and the assistant carries on where you left
+                off.
+              </span>
+            </motion.div>
+          )}
 
           {/* live credential card */}
           <motion.div variants={bloomSoft} className="mt-6">

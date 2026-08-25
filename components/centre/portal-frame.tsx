@@ -213,14 +213,14 @@ export function PortalFrame({
 /**
  * The scrolling body for an ordinary page inside the frame.
  *
- * Pages get one scroll region and a readable measure. `max-w-6xl` rather than
+ * Pages get one scroll region and a readable measure. `max-w-[1330px]` rather than
  * full-bleed: with the right rail gone there is nothing to stop a table
  * stretching to 1600px, which is how you get rows nobody can track across.
  */
 export function PortalPage({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto w-full max-w-6xl px-5 py-6 sm:px-7">
+      <div className="mx-auto w-full max-w-[1330px] px-5 py-6 sm:px-7">
         {/* Renders nothing on routes it has no claim on, which is most of
             them. That is what keeps it from becoming the rail it replaced. */}
         <AttentionStrip />

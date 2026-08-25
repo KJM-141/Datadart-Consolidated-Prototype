@@ -94,7 +94,7 @@ export function HowItWorksAdvanced() {
       variants={deckStagger(0.07)}
       initial="hidden"
       animate="show"
-      className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16"
+      className="mx-auto w-full max-w-[1330px] px-4 py-12 sm:px-6 sm:py-16"
     >
       {/* ── Hero ────────────────────────────────────────────────── */}
       <motion.div variants={bloomSoft} className="relative max-w-3xl">

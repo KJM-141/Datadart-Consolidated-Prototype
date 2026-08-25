@@ -241,13 +241,8 @@ export function AssistantDock() {
             className="pointer-events-auto flex max-h-[30rem] w-[21rem] max-w-[calc(100vw-2.5rem)] origin-bottom-right flex-col overflow-hidden rounded-2xl border border-hair bg-canvas/95 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.65)] backdrop-blur-xl"
           >
             <header className="flex shrink-0 items-center gap-2.5 border-b border-hair bg-sunk/70 px-3.5 py-3">
-              <span className="relative grid size-8 shrink-0 place-items-center rounded-full">
-                {!reduce && (
-                  <span className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]" />
-                )}
-                <span className="absolute inset-0.5 overflow-hidden rounded-full">
-                  <AssistantMark size={28} />
-                </span>
+              <span className="relative grid size-8 shrink-0 place-items-center overflow-hidden rounded-full">
+                <AssistantMark size={32} />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[12.5px] font-semibold leading-tight">
@@ -360,18 +355,14 @@ export function AssistantDock() {
               really a wash with a bright edge — and a notification that floats
               over arbitrary content should be solid anyway.
             */}
-            <div className="rounded-[1.15rem] bg-[linear-gradient(135deg,color-mix(in_oklab,var(--plasma)_65%,transparent),color-mix(in_oklab,var(--cyo)_38%,transparent)_55%,var(--hair))] p-px shadow-[0_20px_48px_-20px_rgb(0_0_0/0.75)]">
+            <div className="overflow-hidden rounded-xl bg-elev shadow-lg ring-1 ring-inset ring-hair">
               <button
                 type="button"
                 onClick={openDock}
-                className="group flex w-full items-center gap-3 rounded-[calc(1.15rem-1px)] bg-elev px-3.5 py-3 text-left transition-colors hover:bg-sunk"
+                className="group flex w-full items-center gap-3 rounded-xl bg-elev px-3.5 py-3 text-left transition-colors hover:bg-sunk"
               >
                 <span className="relative grid size-10 shrink-0 place-items-center">
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--plasma)_55%,transparent),transparent_70%)] blur-md"
-                  />
-                  <AssistantMark size={34} animated={!reduce} className="relative" />
+                  <AssistantMark size={34} className="relative" />
                 </span>
 
                 <span className="min-w-0 flex-1">
@@ -399,28 +390,15 @@ export function AssistantDock() {
         )}
       </AnimatePresence>
 
+      {/* A plain circular brand avatar — no orbit ring, no glow, no ping. */}
       <button
         type="button"
         onClick={() => (open ? setOpen(false) : openDock())}
         aria-label={open ? "Close assistant" : "Open the DataDart assistant"}
         aria-expanded={open}
-        className={cn(
-          "pointer-events-auto relative grid size-13 shrink-0 place-items-center rounded-full transition-transform duration-300",
-          !reduce && "hover:-translate-y-0.5",
-        )}
+        className="pointer-events-auto relative grid size-12 shrink-0 place-items-center overflow-hidden rounded-full shadow-md ring-1 ring-black/5 transition-shadow hover:shadow-lg"
       >
-        {!reduce && (
-          <span className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]" />
-        )}
-        {!reduce && !open && nudge && (
-          <span className="adv-ping absolute inset-0 rounded-full bg-[color-mix(in_oklab,var(--plasma)_45%,transparent)]" />
-        )}
-        {/* The mark is a disc now, so it fills the ring instead of floating as
-            a glyph inside a second circle — the orbit reads as a status ring
-            around an avatar, which is what it always wanted to be. */}
-        <span className="absolute inset-[3px] overflow-hidden rounded-full shadow-[0_10px_30px_-12px_color-mix(in_oklab,var(--plasma)_90%,transparent)]">
-          <AssistantMark size={46} animated={!reduce} />
-        </span>
+        <AssistantMark size={48} />
       </button>
     </div>
   );

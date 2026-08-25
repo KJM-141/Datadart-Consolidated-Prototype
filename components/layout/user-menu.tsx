@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { KeyRound, LogOut, SlidersHorizontal, UserRound } from "lucide-react";
+import { KeyRound, LogOut, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -26,16 +26,11 @@ export function UserAvatar({
   const mounted = useMounted();
   const initial = mounted ? (profile.firstName[0] ?? "U") : "";
   return (
-    <span className={cn("relative inline-flex rounded-full p-0.5", ringClassName)}>
-      {/* A conic ring that turns slowly around the initial. A flat gradient
-          border reads as a sticker; a moving one reads as a live session. */}
-      <span
-        aria-hidden
-        className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]"
-      />
+    <span className={cn("relative inline-flex rounded-full", ringClassName)}>
+      {/* A plain avatar — accent fill, no gradient ring, no spin. */}
       <span
         className={cn(
-          "relative flex size-8 items-center justify-center rounded-full bg-elev text-sm font-semibold text-ink coarse:size-10",
+          "relative flex size-8 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--plasma)_12%,var(--card))] text-sm font-semibold text-(--plasma) ring-1 ring-inset ring-[color-mix(in_oklab,var(--plasma)_22%,transparent)] coarse:size-10",
           className,
         )}
       >
@@ -86,12 +81,6 @@ export function UserMenu() {
             onClick={() => router.push("/customer/profile/password")}
           >
             <KeyRound className="size-4" /> Change Password
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="gap-2.5 rounded-lg py-2.5"
-            onClick={() => router.push("/")}
-          >
-            <SlidersHorizontal className="size-4" /> Change experience
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
