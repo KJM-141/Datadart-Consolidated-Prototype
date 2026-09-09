@@ -16,7 +16,6 @@ import { HoloPanel, PanelHead } from "@/components/advanced/kit/holo-panel";
 import {
   Eyebrow,
   HudLabel,
-  LiveDot,
   MetricRing,
   Pill,
 } from "@/components/advanced/kit/hud";
@@ -108,16 +107,28 @@ export function DashboardAdvanced() {
       animate="show"
       className="space-y-4"
     >
-      {/* ══ Greeting ══════════════════════════════════════════════════ */}
+      {/* ══ Tab navbar + greeting ═════════════════════════════════════ */}
       <motion.section variants={bloomSoft} className="relative">
+        {/* The view switch sits at the very top of the surface, so it reads as
+            the page's tab bar rather than a control buried under a headline. */}
+        <div className="border-b border-hair pb-3">
+          <Segmented
+            options={VIEWS}
+            value={active}
+            onChange={setDashboardView}
+            labels={VIEW_LABELS}
+            size="sm"
+            aria-label="Overview layout"
+          />
+        </div>
+
         {/*
-          Suppressed in the guided view, which opens on a greeting of its own.
-          Two "Good afternoon, Demo" on one screen is the kind of thing nobody
-          reports and everybody notices — and the conversation wants the vertical
-          room more than the page furniture does.
+          The greeting is suppressed in the guided view, which opens on a
+          greeting of its own. Two "Good afternoon, Demo" on one screen is the
+          kind of thing nobody reports and everybody notices.
         */}
         {active === "dashboard" && (
-          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+          <div className="mt-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">
               <Eyebrow>{format(new Date(), "EEEE, d MMMM yyyy")}</Eyebrow>
               <h1 className="mt-2.5 text-[1.75rem] font-semibold leading-[1.12] sm:text-[2.125rem]">
@@ -143,17 +154,6 @@ export function DashboardAdvanced() {
             </div>
           </div>
         )}
-
-        <div className={cn("border-b border-hair pb-3", active === "dashboard" && "mt-5")}>
-          <Segmented
-            options={VIEWS}
-            value={active}
-            onChange={setDashboardView}
-            labels={VIEW_LABELS}
-            size="sm"
-            aria-label="Overview layout"
-          />
-        </div>
       </motion.section>
 
       <AnimatePresence mode="wait" initial={false}>
@@ -206,7 +206,6 @@ function DashboardBody() {
             forces on it, instead of centring a fixed-height map inside it and
             leaving a band of nothing above the legend. */}
         <HoloPanel
-          scan
           className="flex flex-col overflow-hidden p-0 xl:col-span-8"
           variant="glass"
         >
@@ -215,10 +214,7 @@ function DashboardBody() {
               <HudLabel className="mb-1.5">Network</HudLabel>
               <h2 className="flex items-center gap-2.5 text-[15px] font-semibold leading-snug">
                 Live transfer routes
-                <Pill tone="cyo" className="gap-1.5">
-                  <LiveDot tone="cyo" />
-                  {routes.length} active
-                </Pill>
+                <Pill tone="cyo">{routes.length} active</Pill>
               </h2>
             </div>
             <Link
@@ -427,7 +423,7 @@ function DashboardBody() {
         <HoloPanel className="flex flex-col p-5 xl:col-span-4">
           <PanelHead label="Library" title="Resources & FAQ" />
           <p className="mt-2 text-[12.5px] leading-relaxed text-muted-foreground">
-            Datasheets, whitepapers, blogs and videos — everything in one place.
+            Datasheets, whitepapers, blogs and videos, all in one place.
           </p>
           <Link
             href={PATHS.resources}

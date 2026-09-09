@@ -78,7 +78,7 @@ export function SubscriptionAdvanced() {
       <PageHeading
         eyebrow="Device rental"
         title="Subscriptions"
-        description="Month-to-month rental of devices — ideal for recurring or unpredictable transfers, with optional DataDart cloud endpoints for public-cloud moves. Discounts apply to longer terms; simply select hardware and provide a shipping destination."
+        description="Month-to-month rental of devices, ideal for recurring or unpredictable transfers, with optional DataDart cloud endpoints for public-cloud moves. Discounts apply to longer terms; simply select hardware and provide a shipping destination."
         actions={
           <>
             <DateRangePicker
@@ -161,10 +161,10 @@ export function SubscriptionAdvanced() {
           </h3>
           <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
             {range
-              ? "Nothing in this date range — try widening it."
+              ? "Nothing in this date range, try widening it."
               : tab === "Active"
                 ? "You have no active device rentals. Subscribe to hardware and we'll ship it to you."
-                : "No closed subscriptions yet — completed rentals will land here."}
+                : "No closed subscriptions yet, completed rentals will land here."}
           </p>
           {!range && (
             <Link
@@ -332,7 +332,7 @@ function SubscriptionCapsule({ sub }: { sub: DeviceSubscription }) {
                   ))}
                   <div className="flex items-center justify-between bg-muted/40 px-4 py-3">
                     <span className="text-[12px] text-muted-foreground">
-                      {deviceCount} device{deviceCount > 1 ? "s" : ""} · monthly
+                      {deviceCount} device{deviceCount > 1 ? "s" : ""}, monthly
                       total
                     </span>
                     <span className="text-[15px] font-semibold tabular-nums plasma-text">
@@ -348,11 +348,11 @@ function SubscriptionCapsule({ sub }: { sub: DeviceSubscription }) {
                     <p className="inline-flex items-start gap-2 leading-snug">
                       <MapPin className="mt-0.5 size-3.5 shrink-0 text-(--plasma)" />
                       {sub.shipping.address}, {sub.shipping.city},{" "}
-                      {sub.shipping.state}, {sub.shipping.country} —{" "}
+                      {sub.shipping.state}, {sub.shipping.country},{" "}
                       {sub.shipping.pincode}
                     </p>
                     <p className="inline-flex items-center gap-2 text-muted-foreground">
-                      <UserRound className="size-3.5" /> {sub.contact.name} ·{" "}
+                      <UserRound className="size-3.5" /> {sub.contact.name},{" "}
                       {sub.contact.phone}
                     </p>
                   </div>

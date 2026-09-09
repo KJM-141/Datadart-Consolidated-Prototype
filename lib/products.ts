@@ -19,7 +19,7 @@ const STORAGE_SPECS = {
     },
     {
       label: "Management / monitoring",
-      value: "SMART, SNMP, Syslog · Web and REST API management",
+      value: "SMART, SNMP, Syslog, Web and REST API management",
     },
     { label: "RAID", value: "RAID 0, RAID 1, RAID 5, RAID 6" },
     {
@@ -37,7 +37,7 @@ export const PRODUCTS: Product[] = [
     family: "Edge Storage",
     model: "BRYCK",
     name: "BRYCK",
-    tagline: "1 petabyte in the form factor of a brick — 14 lbs",
+    tagline: "1 petabyte in the form factor of a brick, 14 lbs",
     image: "/assets/products/bryck-hero.webp",
     gallery: ["/assets/products/bryck-hero.webp", "/assets/products/bryck-alt.webp"],
     hero: { value: "14 lbs", label: "For a petabyte" },
@@ -80,14 +80,14 @@ export const PRODUCTS: Product[] = [
           {
             label: "Operating",
             value:
-              "Temperature 0°C to 60°C · Humidity 10–90% RH · Altitude 0–10,000 ft",
+              "Temperature 0°C to 60°C, Humidity 10–90% RH, Altitude 0–10,000 ft",
           },
           { label: "Non-operating (storage)", value: "Temperature −40°C to 70°C" },
         ],
       },
     ],
     capabilities:
-      "Rugged, portable, storage-only BRYCK. A low-SWaP, high-performance, petabyte-scale mobile data solution that weighs only 14 lbs and captures an impressive 1 petabyte of data in the compact form factor of a construction brick. Its small form factor allows versatile deployment at standard and mobile edges, as well as cloud and data centres — ideal for handling and processing large volumes of data.",
+      "Rugged, portable, storage-only BRYCK. A low-SWaP, high-performance, petabyte-scale mobile data solution that weighs only 14 lbs and captures an impressive 1 petabyte of data in the compact form factor of a construction brick. Its small form factor allows versatile deployment at standard and mobile edges, as well as cloud and data centres, ideal for handling and processing large volumes of data.",
   },
   {
     slug: "bryck-mini",
@@ -138,11 +138,11 @@ export const PRODUCTS: Product[] = [
         rows: [
           {
             label: "Operating",
-            value: "0°C to 60°C · Humidity 10–90% RH · Altitude 0–10,000 ft",
+            value: "0°C to 60°C, Humidity 10–90% RH, Altitude 0–10,000 ft",
           },
           {
             label: "Shock / vibration",
-            value: "Shock 3-axis, 35g, 25ms · Vibration 4.76 Grms, 10Hz–2000Hz",
+            value: "Shock 3-axis, 35g, 25ms, Vibration 4.76 Grms, 10Hz–2000Hz",
           },
           { label: "Non-operating (storage)", value: "−40°C to 85°C" },
           {
@@ -153,7 +153,7 @@ export const PRODUCTS: Product[] = [
       },
     ],
     capabilities:
-      "BRYCK Mini — non-swappable blocks. A compact, rugged storage system engineered for reliable performance in disadvantaged and harsh environments. Designed with low power consumption in mind, it employs an advanced power-management algorithm that activates only the necessary storage devices during operation, optimising efficiency and extending operational life.",
+      "BRYCK Mini, non-swappable blocks. A compact, rugged storage system engineered for reliable performance in disadvantaged and harsh environments. Designed with low power consumption in mind, it employs an advanced power-management algorithm that activates only the necessary storage devices during operation, optimising efficiency and extending operational life.",
   },
   {
     // Specs sourced from tsecond.ai (Edge HPC → BRYCK-FXR) and the BRYCK
@@ -199,7 +199,7 @@ export const PRODUCTS: Product[] = [
           {
             label: "AI compute",
             value:
-              "Advanced AI accelerators — compute-to-storage ratio and TOPS configurable at build time",
+              "Advanced AI accelerators, compute-to-storage ratio and TOPS configurable at build time",
           },
           { label: "Power consumption", value: "240–800 W" },
           {
@@ -215,7 +215,7 @@ export const PRODUCTS: Product[] = [
           {
             label: "Environmental",
             value:
-              "Meets or exceeds MIL-STD-810 — extreme temperatures, vibration and shock",
+              "Meets or exceeds MIL-STD-810, extreme temperatures, vibration and shock",
           },
           { label: "Ingress", value: "Water-resistant, shockproof enclosure" },
           {
@@ -224,13 +224,13 @@ export const PRODUCTS: Product[] = [
           },
           {
             label: "Encryption",
-            value: "Multi-level encryption · 256-bit hardware encryption",
+            value: "Multi-level encryption, 256-bit hardware encryption",
           },
         ],
       },
     ],
     capabilities:
-      "BRYCK-FXR is a rugged edge AI kit built for the disconnected world. It pairs an NVIDIA BlueField DPU and advanced AI accelerators with up to 512 TB of storage in a small, water-resistant, shockproof and fully transportable form factor — so you can run inference at the tactical edge, then fly the data home. Meets or exceeds MIL-STD-810, with tamper-proof enclosures and multi-level encryption.",
+      "BRYCK-FXR is a rugged edge AI kit built for the disconnected world. It pairs an NVIDIA BlueField DPU and advanced AI accelerators with up to 512 TB of storage in a small, water-resistant, shockproof and fully transportable form factor, so you can run inference at the tactical edge, then fly the data home. Meets or exceeds MIL-STD-810, with tamper-proof enclosures and multi-level encryption.",
     detailsUrl: "https://tsecond.ai/products/edge-hpc?tab=bryck-fxr",
   },
 ];

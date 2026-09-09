@@ -10,20 +10,14 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Headphones, ShieldCheck, Terminal } from "lucide-react";
+import { ArrowUp, FileText, Headphones, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AssistantMark } from "@/components/brand/assistant-mark";
 import { Markdown } from "@/components/shared/markdown";
 import { TransferSummary } from "@/components/intake/transfer-summary";
 import { EstimateCard } from "@/components/pricing/estimate-card";
-import { HoloPanel } from "@/components/advanced/kit/holo-panel";
-import { HudLabel, LiveDot } from "@/components/advanced/kit/hud";
+import { LiveDot } from "@/components/advanced/kit/hud";
 import {
   canEstimate,
   containsSecret,
@@ -40,15 +34,14 @@ import { useAppStore } from "@/lib/store";
 import type { ChatTurn, TransferFacts } from "@/lib/types";
 import { EASE_ADV, useSafeReducedMotion } from "@/lib/advanced-motion";
 import { cn } from "@/lib/utils";
-import { LogoMark } from "@/components/brand/logo-mark";
 
 /* Agent copy per slot — identical script to the Normal build; the rules engine
    in lib/agent picks the question, this only renders it. */
 const ASK: Record<Slot, (f: TransferFacts) => string> = {
   size: () =>
-    "Hi! I'm the DataDart assistant. I help move large datasets into the cloud — fast, secure, fully tracked. **How much data are you looking to move?**",
+    "Hi! I'm the DataDart assistant. I help move large datasets into the cloud, fast, secure and fully tracked. **How much data are you looking to move?**",
   sourceLocation: (f) =>
-    `Got it — **${f.sizeTB?.toLocaleString()} TB**. Where does that data live today?`,
+    `Got it. **${f.sizeTB?.toLocaleString()} TB**. Where does that data live today?`,
   destination: () => "And where should it land?",
   serviceLevel: () =>
     "Want our **White Glove** service, where our engineers handle the data load on site?",
@@ -56,9 +49,9 @@ const ASK: Record<Slot, (f: TransferFacts) => string> = {
   frequency: () =>
     "**How often do you run a move like this?** If it repeats, renting the fleet usually beats shipping it back and forth.",
   compliance: () =>
-    "Last one — does this data carry any compliance requirements?",
+    "Last one. Does this data carry any compliance requirements?",
   complete: () =>
-    "That's everything I need. I've saved your draft — you can request a detailed proposal whenever you're ready, and I'll email you a link to pick this up later.",
+    "That's everything I need. I've saved your draft. You can request a detailed proposal whenever you're ready, and I'll email you a link to pick this up later.",
 };
 
 const STARTERS = [
@@ -89,13 +82,15 @@ function IntakeConsole() {
 
   // Generated after mount — nextDisplayId() is random, so deriving it during
   // render would differ between server and client and break hydration.
-  const [displayId, setDisplayId] = useState("DD-2026-····");
+  const [displayId, setDisplayId] = useState("DD-2026-0000");
   useEffect(() => setDisplayId(nextDisplayId()), []);
   const [facts, setFacts] = useState<TransferFacts>({});
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [typing, setTyping] = useState(false);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const seeded = useRef(false);
 
   const est = useMemo(
@@ -178,7 +173,7 @@ function IntakeConsole() {
       };
       setFacts(pre);
       agentSay(
-        `Welcome back — I've carried over your sizer inputs: **${size.toLocaleString()} TB** from **${source}** to **${dest}**. Let's refine it.`,
+        `Welcome back. I've carried over your sizer inputs: **${size.toLocaleString()} TB** from **${source}** to **${dest}**. Let's refine it.`,
         { delay: 400 },
       );
       const slot = nextSlot(pre);
@@ -197,6 +192,15 @@ function IntakeConsole() {
     });
   }, [turns, typing]);
 
+  // Grow the composer with its content (up to a cap), the way every modern
+  // chat does, instead of a single fixed-height line.
+  useEffect(() => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
+  }, [input]);
+
   const send = useCallback(
     (raw: string) => {
       const text = raw.trim();
@@ -210,7 +214,7 @@ function IntakeConsole() {
 
       if (hadSecret) {
         agentSay(
-          "I've **redacted that from the transcript** — please don't share keys or bucket paths here. We collect technical details only after your agreement is signed, through a secure, audited channel.",
+          "I've **redacted that from the transcript**. Please don't share keys or bucket paths here. We collect technical details only after your agreement is signed, through a secure, audited channel.",
           { delay: 800 },
         );
         return;
@@ -251,7 +255,7 @@ function IntakeConsole() {
 
       if (/schema|oracle|database migration|convert/i.test(text)) {
         agentSay(
-          "We move the data itself — schema conversion stays on your side, though we're happy to introduce a partner. Shall I keep scoping the transfer?",
+          "We move the data itself. Schema conversion stays on your side, though we're happy to introduce a partner. Shall I keep scoping the transfer?",
           { delay: 800 },
         );
         return;
@@ -267,7 +271,7 @@ function IntakeConsole() {
   const [proposalRequested, setProposalRequested] = useState(false);
 
   useEffect(() => {
-    if (displayId.includes("····")) return;
+    if (displayId === "DD-2026-0000") return;
     if (!turns.some((t) => t.role === "user")) return;
 
     upsertConversation({
@@ -298,7 +302,7 @@ function IntakeConsole() {
       estimate={est}
       onEdit={(key) => {
         setFacts((f) => ({ ...f, [key]: undefined }));
-        agentSay("No problem — what should it be instead?", { delay: 400 });
+        agentSay("No problem, what should it be instead?", { delay: 400 });
       }}
       /* Routed through `send` rather than setting the fact directly: choosing a
          cadence in the panel is the same answer as typing it, so it should
@@ -307,253 +311,210 @@ function IntakeConsole() {
       onRequestProposal={() => {
         setProposalRequested(true);
         toast.success("Draft saved", {
-          description: `${displayId} — we'll email a resumable link and your proposal.`,
+          description: `${displayId}: we'll email a resumable link and your proposal.`,
         });
       }}
     />
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7">
-      {/* intro */}
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Terminal className="size-3.5 text-(--plasma)" />
-            <HudLabel>New transfer · session {displayId}</HudLabel>
-          </div>
-          <h1 className="mt-2 text-[1.9rem] font-semibold leading-[1.05] tracking-tight sm:text-[2.3rem]">
-            Let&apos;s scope your move
-          </h1>
-        </div>
-        <p className="max-w-sm text-[13px] leading-relaxed text-muted-foreground">
-          Answer a few questions and you&apos;ll have a priced, sized estimate in
-          about two minutes — no account required.
-        </p>
-      </div>
-
-      <HoloPanel
-        plain
-        className="grid overflow-hidden lg:h-[calc(100dvh-16rem)] lg:min-h-140 lg:grid-cols-[1.35fr_1fr]"
-      >
-        {/* ── Terminal ─────────────────────────────────────────── */}
-        <div className="flex min-h-0 flex-col border-border/60 lg:border-r">
-          <div className="flex items-center justify-between gap-3 border-b border-border/60 px-5 py-3.5 sm:px-6">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="relative grid size-9 shrink-0 place-items-center rounded-full">
-                {!reduce && (
-                  <span className="adv-orbit absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,transparent,var(--plasma),var(--cyo),transparent)]" />
-                )}
-                <span className="absolute inset-[2px] overflow-hidden rounded-full">
-                  <AssistantMark size={32} />
-                </span>
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold">
-                  DataDart assistant
-                </p>
-                <p className="mt-0.5 inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground">
-                  <LiveDot tone="success" />
-                  {typing ? "composing" : "online"}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                toast.success("Connecting you to a specialist", {
-                  description: "Someone from the team will join this chat shortly.",
-                })
-              }
-              className="btn-ghost-hud inline-flex shrink-0 items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium"
-            >
-              <Headphones className="size-3.5" /> Talk to a human
-            </button>
-          </div>
-
-          <div
-            ref={scrollRef}
-            className="min-h-0 flex-1 space-y-3.5 overflow-y-auto px-5 py-5 sm:px-6"
-          >
-            <AnimatePresence initial={false}>
-              {turns.map((turn) => (
-                <motion.div
-                  key={turn.id}
-                  initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  transition={{ duration: 0.4, ease: EASE_ADV }}
-                  className={cn(
-                    "flex flex-col gap-2",
-                    turn.role === "user" && "items-end",
-                  )}
-                >
-                  {turn.role === "agent" ? (
-                    <div className="flex max-w-[92%] items-start gap-2.5">
-                      <AssistantMark size={22} className="mt-2 shrink-0" />
-                      <div className="relative overflow-hidden rounded-2xl rounded-tl-sm bg-muted/60 px-4 py-3 text-[13px] leading-relaxed ring-1 ring-inset ring-border">
-                        <span
-                          aria-hidden
-                          className="absolute inset-y-0 left-0 w-[2px] plasma-fill"
-                        />
-                        <Markdown text={turn.text} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="relative max-w-[88%] overflow-hidden rounded-2xl rounded-tr-sm plasma-fill px-4 py-3 text-[13px] leading-relaxed text-white shadow-[0_10px_28px_-14px_color-mix(in_oklab,var(--plasma)_95%,transparent)]">
-                      <Markdown text={turn.text} />
-                    </div>
-                  )}
-
-                  {turn.estimate && est && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.18, ease: EASE_ADV }}
-                      className="w-full max-w-[88%] lg:hidden"
-                    >
-                      <EstimateCard estimate={est} compact />
-                    </motion.div>
-                  )}
-
-                  {turn.chips && turn.chips.length > 0 && (
-                    <div className="flex max-w-[92%] flex-wrap gap-1.5 pl-8">
-                      {turn.chips.map((chip, i) => (
-                        <motion.button
-                          key={chip}
-                          type="button"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.1 + i * 0.05, ease: EASE_ADV }}
-                          onClick={() => send(chip)}
-                          className="rounded-full bg-[color-mix(in_oklab,var(--plasma)_12%,transparent)] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-(--plasma) ring-1 ring-inset ring-[color-mix(in_oklab,var(--plasma)_38%,transparent)] transition-all hover:bg-[color-mix(in_oklab,var(--plasma)_22%,transparent)] hover:shadow-[0_0_18px_-6px_color-mix(in_oklab,var(--plasma)_95%,transparent)]"
-                        >
-                          {chip}
-                        </motion.button>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {typing && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex items-center gap-2 pl-8"
-              >
-                <span className="flex h-4 items-end gap-0.5">
-                  {[0, 1, 2, 3, 4].map((n) => (
-                    <motion.span
-                      key={n}
-                      animate={
-                        reduce
-                          ? undefined
-                          : { scaleY: [0.3, 1, 0.3], opacity: [0.4, 1, 0.4] }
-                      }
-                      transition={{
-                        duration: 1.1,
-                        repeat: Infinity,
-                        delay: n * 0.11,
-                      }}
-                      className="h-3 w-[3px] origin-bottom rounded-full plasma-fill"
-                    />
-                  ))}
-                </span>
-                <span className="text-[13px] font-medium text-muted-foreground">
-                  agent composing
-                </span>
-              </motion.div>
-            )}
-
-            {turns.length <= 1 && !typing && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, ease: EASE_ADV }}
-                className="pl-8 pt-2"
-              >
-                <HudLabel className="flex items-center gap-1.5">
-                  <LogoMark size={13} /> Or start from a common move
-                </HudLabel>
-                <div className="mt-2.5 flex flex-wrap gap-1.5">
-                  {STARTERS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => send(s)}
-                      className="rounded-full bg-muted/60 px-3.5 py-2 text-[11px] font-medium text-muted-foreground ring-1 ring-inset ring-border transition-all hover:text-foreground hover:ring-[color-mix(in_oklab,var(--plasma)_45%,transparent)] coarse:py-3"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </div>
-
-          {/* composer */}
-          <div className="px-5 pb-5 sm:px-6">
-            <div className="mb-2 lg:hidden">
-              <Sheet>
-                <SheetTrigger className="btn-ghost-hud w-full py-2.5 text-[13px] font-medium coarse:py-3">
-                  View transfer summary
-                  {est ? ` · ${fmtRange(est)}` : ""}
-                </SheetTrigger>
-                <SheetContent
-                  side="bottom"
-                  className="max-h-[85dvh] overflow-y-auto p-5"
-                >
-                  <SheetTitle className="sr-only">Transfer summary</SheetTitle>
-                  {summary}
-                </SheetContent>
-              </Sheet>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                send(input);
-              }}
-              className="group/composer flex items-center gap-2.5 rounded-full bg-[color-mix(in_oklab,var(--muted)_65%,transparent)] px-4 py-2 shadow-[inset_0_0_0_1px_var(--border)] transition-shadow duration-300 focus-within:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--plasma)_60%,transparent),0_0_26px_-10px_color-mix(in_oklab,var(--plasma)_95%,transparent)]"
-            >
-              <span className="shrink-0 font-mono text-sm font-bold text-(--plasma)">
-                ›
-              </span>
-              <input
-                id="intake-input"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your answer…"
-                aria-label="Message the DataDart assistant"
-                className="min-w-0 flex-1 bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground/70 coarse:py-3"
-              />
-              <button
-                type="submit"
-                disabled={!input.trim()}
-                aria-label="Send"
-                className="btn-plasma flex size-9 shrink-0 items-center justify-center text-white disabled:pointer-events-none disabled:opacity-40 coarse:size-11"
-              >
-                <ArrowUp className="size-4" />
-              </button>
-            </form>
-            <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-              <ShieldCheck className="size-3 text-(--cyo)" />
-              Never share credentials or bucket paths in chat — they&apos;re
-              redacted automatically.
+    <div className="flex h-[calc(100dvh-12rem)] min-h-[34rem] flex-col">
+      {/* Header */}
+      <header className="flex items-center justify-between gap-3 border-b border-hair pb-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <AssistantMark size={30} className="shrink-0" />
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-semibold">DataDart assistant</p>
+            <p className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+              <LiveDot tone="success" />
+              {typing ? "typing" : "online"}
             </p>
           </div>
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSummaryOpen(true)}
+            className="btn-ghost-hud inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium"
+          >
+            <FileText className="size-3.5" /> Transfer summary
+            {est ? ` (${fmtRange(est)})` : ""}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              toast.success("Connecting you to a specialist", {
+                description: "Someone from the team will join this chat shortly.",
+              })
+            }
+            className="btn-ghost-hud hidden items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium sm:inline-flex"
+          >
+            <Headphones className="size-3.5" /> Talk to a human
+          </button>
+        </div>
+      </header>
 
-        {/* ── Live scoping panel ───────────────────────────────── */}
-        <aside className="relative hidden min-h-0 overflow-y-auto bg-muted/30 p-5 lg:block">
-          <span aria-hidden className="hud-dots pointer-events-none absolute inset-0 opacity-25" />
-          {!reduce && (
-            <span className="adv-scan pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,transparent,color-mix(in_oklab,var(--cyo)_12%,transparent),transparent)]" />
+      {/* Conversation */}
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-1 py-6">
+          <AnimatePresence initial={false}>
+            {turns.map((turn) => (
+              <motion.div
+                key={turn.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: EASE_ADV }}
+                className={cn(
+                  "flex flex-col gap-3",
+                  turn.role === "user" ? "items-end" : "items-start",
+                )}
+              >
+                {turn.role === "agent" ? (
+                  <div className="flex w-full items-start gap-3">
+                    <AssistantMark size={26} className="mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1 pt-0.5 text-[14px] leading-relaxed text-ink">
+                      <Markdown text={turn.text} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="max-w-[85%] rounded-2xl bg-[color-mix(in_oklab,var(--plasma)_13%,transparent)] px-4 py-2.5 text-[14px] leading-relaxed text-ink ring-1 ring-inset ring-[color-mix(in_oklab,var(--plasma)_24%,transparent)]">
+                    <Markdown text={turn.text} />
+                  </div>
+                )}
+
+                {turn.estimate && est && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, ease: EASE_ADV }}
+                    className="w-full max-w-md pl-9"
+                  >
+                    <EstimateCard estimate={est} compact />
+                  </motion.div>
+                )}
+
+                {turn.chips && turn.chips.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pl-9">
+                    {turn.chips.map((chip, i) => (
+                      <motion.button
+                        key={chip}
+                        type="button"
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.08 + i * 0.04, ease: EASE_ADV }}
+                        onClick={() => send(chip)}
+                        className="rounded-full bg-[color-mix(in_oklab,var(--plasma)_10%,transparent)] px-3.5 py-1.5 text-[12px] font-medium text-(--plasma) ring-1 ring-inset ring-[color-mix(in_oklab,var(--plasma)_30%,transparent)] transition-colors hover:bg-[color-mix(in_oklab,var(--plasma)_18%,transparent)]"
+                      >
+                        {chip}
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {typing && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center gap-3"
+            >
+              <AssistantMark size={26} className="shrink-0" />
+              <span className="flex items-center gap-1">
+                {[0, 1, 2].map((n) => (
+                  <motion.span
+                    key={n}
+                    animate={
+                      reduce ? undefined : { y: [0, -3, 0], opacity: [0.4, 1, 0.4] }
+                    }
+                    transition={{ duration: 0.9, repeat: Infinity, delay: n * 0.15 }}
+                    className="size-1.5 rounded-full bg-muted-foreground"
+                  />
+                ))}
+              </span>
+            </motion.div>
           )}
-          <div className="relative">{summary}</div>
-        </aside>
-      </HoloPanel>
+
+          {turns.length <= 1 && !typing && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, ease: EASE_ADV }}
+              className="pl-9"
+            >
+              <p className="text-[12px] font-medium text-muted-foreground">
+                Or start from a common move
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                {STARTERS.map((sug) => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() => send(sug)}
+                    className="rounded-full bg-muted/60 px-3.5 py-2 text-[12px] font-medium text-muted-foreground ring-1 ring-inset ring-border transition-colors hover:text-foreground hover:ring-[color-mix(in_oklab,var(--plasma)_40%,transparent)]"
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Composer */}
+      <div className="border-t border-hair pt-3">
+        <div className="mx-auto w-full max-w-3xl">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
+            }}
+            className="flex items-end gap-2 rounded-2xl bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] px-3 py-2 shadow-[inset_0_0_0_1px_var(--border)] transition-shadow focus-within:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--plasma)_55%,transparent)]"
+          >
+            <textarea
+              ref={taRef}
+              id="intake-input"
+              rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  // Read the live value, not the closed-over state, so a fast
+                  // type-then-Enter never sends an empty string.
+                  send(e.currentTarget.value);
+                }
+              }}
+              placeholder="Message the assistant"
+              aria-label="Message the DataDart assistant"
+              className="max-h-40 min-h-[2.5rem] min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-[14px] leading-relaxed outline-none placeholder:text-muted-foreground/70"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              aria-label="Send"
+              className="btn-plasma mb-0.5 flex size-9 shrink-0 items-center justify-center text-white disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ArrowUp className="size-4" />
+            </button>
+          </form>
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+            <ShieldCheck className="size-3 text-(--cyo)" />
+            Never share credentials or bucket paths in chat, they&apos;re redacted
+            automatically.
+          </p>
+        </div>
+      </div>
+
+      {/* Transfer summary lives in a drawer instead of a permanent side panel. */}
+      <Sheet open={summaryOpen} onOpenChange={setSummaryOpen}>
+        <SheetContent side="right" className="w-full overflow-y-auto p-5 sm:max-w-md">
+          <SheetTitle className="sr-only">Transfer summary</SheetTitle>
+          {summary}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

@@ -140,7 +140,7 @@ export function ConversationDetail({
                   </p>
                   {session.summary && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {session.summary.deviceLabel} · ~
+                      {session.summary.deviceLabel}, ~
                       {session.summary.totalHours} h door to door
                     </p>
                   )}
@@ -185,7 +185,7 @@ export function ConversationDetail({
                   </div>
                 ) : (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    No messages captured yet — the session is still opening.
+                    No messages captured yet, the session is still opening.
                   </p>
                 )}
               </section>
@@ -223,7 +223,7 @@ export function ConversationDetail({
                   </Button>
                   <Button
                     size="sm"
-                    className="btn-brand ml-auto rounded-full font-semibold"
+                    className="btn-brand ml-auto rounded-full font-semibold text-white"
                     onClick={() => onConvert(session)}
                   >
                     Convert to proposal <ArrowRight className="size-3.5" />

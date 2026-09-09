@@ -307,7 +307,7 @@ function QuickSizer({ onAsk }: { onAsk: (text: string) => void }) {
         type="button"
         onClick={() =>
           onAsk(
-            `${sizeTB} TB, ${service.toLowerCase()} — walk me through this estimate`,
+            `${sizeTB} TB, ${service.toLowerCase()}, walk me through this estimate`,
           )
         }
         className="text-[12.5px] font-medium text-(--plasma) transition-colors hover:text-ink"

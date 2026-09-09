@@ -189,7 +189,7 @@ export function ProposalDoc({
       destination: endpoint(destination),
       stage: "Proposal",
       stageHistory: [
-        { stage: "Proposal", at: today, owner: "Sales — accepted by customer" },
+        { stage: "Proposal", at: today, owner: "Sales, accepted by customer" },
       ],
       progress: 0,
       estimate: { min: est.min, max: est.max, ratesVersion: est.ratesVersion },
@@ -220,7 +220,7 @@ export function ProposalDoc({
     setAccepting(false);
     onDone?.();
     toast.success(`${reference} accepted`, {
-      description: "Onboarding starts next — we'll collect site detail there.",
+      description: "Onboarding starts next, we'll collect site detail there.",
       action: {
         label: "Track",
         onClick: () => router.push(PATHS.transfer(reference)),
@@ -240,7 +240,7 @@ export function ProposalDoc({
           </p>
           <p className="mt-1 text-[12px] text-ink-3">
             Prepared for {profile.firstName} {profile.lastName}
-            {profile.email ? ` · ${profile.email}` : ""}
+            {profile.email ? `, ${profile.email}` : ""}
           </p>
         </div>
         <dl className="text-right text-[11px]">
@@ -266,7 +266,7 @@ export function ProposalDoc({
         />
         <Note>
           If any of this is wrong, change it in the sizer and the proposal
-          re-issues — nothing here is locked until you accept.
+          re-issues, nothing here is locked until you accept.
         </Note>
       </Block>
 
@@ -303,9 +303,9 @@ export function ProposalDoc({
           <Label className="mb-2">Timeline</Label>
           <ul className="space-y-1.5">
             {[
-              ["Ingress — writing to the device", timeline.ingressHours],
+              ["Ingress, writing to the device", timeline.ingressHours],
               ["Transit", timeline.travelHours],
-              ["Egress — landing in your cloud", timeline.egressHours],
+              ["Egress, landing in your cloud", timeline.egressHours],
             ].map(([label, hours]) => (
               <li
                 key={label as string}
@@ -369,12 +369,12 @@ export function ProposalDoc({
           <Label className="mb-2">Payment schedule</Label>
           <ul className="space-y-1.5">
             <li className="flex items-baseline justify-between gap-3 text-[12px]">
-              <span className="text-ink-2">Advance (50%) — on acceptance</span>
+              <span className="text-ink-2">Advance (50%), on acceptance</span>
               <span className="font-mono tabular-nums">{fmtUSD(advance)}</span>
             </li>
             <li className="flex items-baseline justify-between gap-3 text-[12px]">
               <span className="text-ink-2">
-                Balance (50%) — at {STAGES[7]}
+                Balance (50%), at {STAGES[7]}
               </span>
               <span className="font-mono tabular-nums">
                 {fmtUSD(est.min - advance)}
@@ -436,7 +436,6 @@ function Fold10() {
         {STAGES.map((s, i) => (
           <li key={s} className="text-[11px] text-ink-3">
             <span className="font-mono">{i + 1}</span> {s}
-            {i < STAGES.length - 1 && <span className="ml-3 text-hair">·</span>}
           </li>
         ))}
       </ol>

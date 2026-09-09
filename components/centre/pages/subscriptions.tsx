@@ -222,8 +222,8 @@ function RentalCard({ sub }: { sub: DeviceSubscription }) {
                 <p className="mt-0.5 font-mono text-[10.5px] text-ink-3">
                   {i.qty}× {i.capacityTB ? `${i.capacityTB} TB` : i.model}
                   {i.monthlyRate
-                    ? ` · ${fmtUSD(i.monthlyRate)}/mo each`
-                    : " · priced at proposal"}
+                    ? `, ${fmtUSD(i.monthlyRate)}/mo each`
+                    : ", priced at proposal"}
                 </p>
               </div>
             </li>
@@ -234,7 +234,7 @@ function RentalCard({ sub }: { sub: DeviceSubscription }) {
       {/* Term as a ring — "how much is left" is a circular question. */}
       <div className="flex items-center gap-3.5 border-t border-hair px-4 py-3">
         <TermRing value={used ?? 0} size={44}>
-          {used === null ? "—" : `${Math.round(used * 100)}%`}
+          {used === null ? "N/A" : `${Math.round(used * 100)}%`}
         </TermRing>
 
         <div className="min-w-0 flex-1">
@@ -247,7 +247,7 @@ function RentalCard({ sub }: { sub: DeviceSubscription }) {
               ? "Term dates unavailable"
               : left > 0
                 ? `${left} day${left === 1 ? "" : "s"} remaining`
-                : "Term complete — collection due"}
+                : "Term complete, collection due"}
           </p>
         </div>
 

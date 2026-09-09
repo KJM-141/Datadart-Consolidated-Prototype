@@ -174,7 +174,7 @@ export function OrderDetailPage({ displayId }: { displayId: string }) {
                     ? fmtUSD(due.amount)
                     : order.estimate
                       ? fmtUSD(order.estimate.min)
-                      : "—",
+                      : "N/A",
                 },
                 { label: "Service", value: order.serviceLevel },
               ]}
@@ -236,7 +236,7 @@ export function OrderDetailPage({ displayId }: { displayId: string }) {
                 </div>
 
                 <div className="border-t border-hair px-4 py-3.5">
-                  <Label>Stage {at + 1} — {order.stage}</Label>
+                  <Label>Stage {at + 1}, {order.stage}</Label>
                   <p className="mt-1.5 text-[12px] leading-relaxed text-ink-2">
                     {STAGE_BLURB[order.stage]}
                   </p>
@@ -276,7 +276,7 @@ export function OrderDetailPage({ displayId }: { displayId: string }) {
                         <span className="min-w-0 flex-1">
                           <span className="block text-[11.5px]">{ev.stage}</span>
                           <span className="font-mono text-[10px] text-ink-3">
-                            {ev.at} · {ev.owner}
+                            {ev.at}, {ev.owner}
                           </span>
                         </span>
                       </li>
@@ -332,7 +332,7 @@ export function OrderDetailPage({ displayId }: { displayId: string }) {
                   ))}
                 </ul>
                 <Note>
-                  Downloadable the moment they exist — never emailed as
+                  Downloadable the moment they exist, never emailed as
                   attachments.
                 </Note>
               </Block>
@@ -417,7 +417,7 @@ function Endpoint({
         <p className="text-[13px] font-medium">{endpoint.label}</p>
         <p className="mt-0.5 text-[11px] text-ink-3">
           {endpoint.kind}
-          {endpoint.cloudProvider ? ` · ${endpoint.cloudProvider}` : ""}
+          {endpoint.cloudProvider ? `, ${endpoint.cloudProvider}` : ""}
         </p>
 
         {lines.length > 0 && (

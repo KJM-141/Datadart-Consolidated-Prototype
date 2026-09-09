@@ -43,7 +43,7 @@ export function EstimateCard({
         </motion.p>
       )}
       <p className="mt-1 text-xs text-muted-foreground">
-        ≈ ${estimate.perTBMin}–{estimate.perTBMax} / TB · door-to-door{" "}
+        ≈ ${estimate.perTBMin}–{estimate.perTBMax} / TB, door-to-door{" "}
         <span className="font-semibold text-foreground">
           {formatHours(t.totalHours)}
         </span>{" "}

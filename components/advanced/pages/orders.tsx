@@ -117,7 +117,7 @@ export function OrdersAdvanced() {
       <PageHeading
         eyebrow="One-time transfers"
         title="Data transfer orders"
-        description="Every transfer runs a ten-stage journey — from proposal through certified erasure — with an accountable owner at each handoff. Open any order to track it live."
+        description="Every transfer runs a ten-stage journey, from proposal through certified erasure, with an accountable owner at each handoff. Open any order to track it live."
         actions={
           <>
             <div className="relative">
@@ -213,7 +213,7 @@ export function OrdersAdvanced() {
               ? "Nothing matches your search or date filter. Try widening the range."
               : tab === "Active"
                 ? "You have no active data-transfer orders. Raise one to get petabytes moving."
-                : "No closed orders yet — completed transfers will land here."}
+                : "No closed orders yet, completed transfers will land here."}
           </p>
           {!query && !range && (
             <button

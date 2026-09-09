@@ -247,7 +247,7 @@ export function ProductBody({
               live={avail.state === "available"}
             />
             <span className="text-[11.5px]">{avail.headline}</span>
-            <span className="truncate text-[11px] text-ink-3">· {avail.detail}</span>
+            <span className="truncate text-[11px] text-ink-3">{avail.detail}</span>
           </div>
 
           {product.capacities && product.capacities.length > 0 && (

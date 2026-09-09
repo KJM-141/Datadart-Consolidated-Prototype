@@ -463,7 +463,7 @@ function Progress() {
               <span className="min-w-0 flex-1">
                 <span className="block text-[11.5px]">{e.stage}</span>
                 <span className="font-mono text-[10px] text-ink-3">
-                  {e.at.slice(0, 10)} · {e.owner}
+                  {e.at.slice(0, 10)}, {e.owner}
                 </span>
               </span>
             </li>
@@ -736,7 +736,7 @@ function Renewals() {
               {s.items.map((i) => `${i.qty}× ${i.model}`).join(", ")}
             </p>
             <p className="mt-1 font-mono text-[10.5px] text-ink-3">
-              {s.startDate} → {s.endDate} · {fmtUSD(s.monthlyTotal)}/mo
+              {s.startDate} → {s.endDate}, {fmtUSD(s.monthlyTotal)}/mo
             </p>
           </li>
         ))}

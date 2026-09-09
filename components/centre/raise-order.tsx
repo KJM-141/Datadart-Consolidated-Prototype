@@ -125,7 +125,7 @@ export function RaiseOrder({
       destination: endpoint(to),
       stage: "Proposal",
       stageHistory: [
-        { stage: "Proposal", at: today, owner: "Sales — awaiting review" },
+        { stage: "Proposal", at: today, owner: "Sales, awaiting review" },
       ],
       progress: 0,
       estimate: { min: est.min, max: est.max, ratesVersion: est.ratesVersion },
@@ -242,7 +242,7 @@ export function RaiseOrder({
                   <Input
                     value={to}
                     onChange={(e) => setTo(e.target.value)}
-                    placeholder="AWS — us-east-1"
+                    placeholder="AWS us-east-1"
                     aria-label="Destination"
                   />
                 </div>
@@ -286,7 +286,7 @@ export function RaiseOrder({
                 <div className="min-w-0">
                   <Label>Ballpark</Label>
                   <p className="mt-1 truncate text-[15px] font-semibold tabular-nums">
-                    {est ? fmtRange(est) : "—"}
+                    {est ? fmtRange(est) : "N/A"}
                   </p>
                 </div>
                 {est && (

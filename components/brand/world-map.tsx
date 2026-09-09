@@ -6,6 +6,7 @@ import { Maximize2 } from "lucide-react";
 import worldGeo from "@/lib/world-geo.json";
 import { MAP, arcPath, project } from "@/lib/map-projection";
 import { ENDPOINT_STYLE, ROUTE_STYLE, type Emphasis } from "@/lib/map-style";
+import { DeviceStop, deviceMessage } from "./map-device";
 import { MapDialog } from "./map-dialog";
 import { cn } from "@/lib/utils";
 import { useSafeReducedMotion } from "@/lib/advanced-motion";
@@ -16,7 +17,13 @@ export interface MapRoute {
   to: [number, number];
   fromLabel?: string;
   toLabel?: string;
-  emphasis?: "high" | "mid" | "low";
+  emphasis?: "high" | "mid";
+  /**
+   * For a `mid` (transfer-in-progress) lane, which end the device is sitting at
+   * while data moves on/off it. That endpoint pulses; the lane carries no
+   * travelling packet, because nothing is travelling.
+   */
+  deviceAt?: "source" | "destination";
 }
 
 const { W, H, LAT_TOP, LAT_BOTTOM } = MAP;
@@ -141,13 +148,53 @@ export function WorldMap({
         />
 
         {routes.map((r, i) => {
-          const d = arcPath(r.from, r.to);
           const [fx, fy] = project(r.from);
           const [tx, ty] = project(r.to);
-          const emph: Emphasis = r.emphasis ?? "mid";
+          const emph: Emphasis = r.emphasis ?? "high";
+
+          // Transfer in progress: no lane and no moving packet — the device is
+          // parked at one end and the data is moving on/off it. Show the device
+          // badge where it's parked, and the other end as a plain spot so it's
+          // clear where the data is coming from or going to.
+          if (emph !== "high") {
+            if (!r.deviceAt) return null;
+            const atSource = r.deviceAt === "source";
+            const [dx, dy] = atSource ? [fx, fy] : [tx, ty];
+            const dLabel = atSource ? r.fromLabel : r.toLabel;
+            const [ox, oy] = atSource ? [tx, ty] : [fx, fy];
+            const oLabel = atSource ? r.toLabel : r.fromLabel;
+            const oRole = atSource ? "destination" : "source";
+            return (
+              <g key={r.id}>
+                {/* the far end, as a spot */}
+                <Endpoint x={ox} y={oy} role={oRole} />
+                {labelMode !== "none" && oLabel && (
+                  <MapLabel
+                    x={ox}
+                    y={oy}
+                    text={oLabel}
+                    active={false}
+                    place={oRole === "source" ? "above" : "below"}
+                  />
+                )}
+                {/* the device where it's parked */}
+                <DeviceStop
+                  x={dx}
+                  y={dy}
+                  badgeBelow
+                  message={deviceMessage(r.deviceAt, dLabel)}
+                  reduce={!!reduce}
+                />
+                {labelMode !== "none" && dLabel && (
+                  <MapLabel x={dx} y={dy} text={dLabel} active />
+                )}
+              </g>
+            );
+          }
+
+          const d = arcPath(r.from, r.to);
           const style = ROUTE_STYLE[emph];
           const stroke = style.gradient ? `url(#route-${uid})` : style.color;
-          const active = emph === "high";
 
           return (
             <g key={r.id}>
@@ -172,7 +219,7 @@ export function WorldMap({
                 initial={reduce ? undefined : { pathLength: 0, opacity: 0 }}
                 animate={reduce ? undefined : { pathLength: 1, opacity: style.opacity }}
                 transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.15 * i }}
-                className={active && !reduce ? "route-dash" : undefined}
+                className={!reduce ? "route-dash" : undefined}
               />
               {style.packet && !reduce && (
                 <circle r={style.packet.r} fill="#fff">
@@ -184,13 +231,13 @@ export function WorldMap({
                 </circle>
               )}
 
-              <Endpoint x={fx} y={fy} uid={uid} active={active} reduce={!!reduce} />
-              <Endpoint x={tx} y={ty} uid={uid} active={active} reduce={!!reduce} delay={1} />
+              <Endpoint x={fx} y={fy} role="source" />
+              <Endpoint x={tx} y={ty} role="destination" />
 
-              {(labelMode === "all" || (labelMode === "active" && active)) && (
+              {labelMode !== "none" && (
                 <>
-                  <MapLabel x={fx} y={fy} text={r.fromLabel} active={active} />
-                  <MapLabel x={tx} y={ty} text={r.toLabel} active={active} place="below" />
+                  <MapLabel x={fx} y={fy} text={r.fromLabel} active />
+                  <MapLabel x={tx} y={ty} text={r.toLabel} active place="below" />
                 </>
               )}
             </g>
@@ -218,51 +265,45 @@ export function WorldMap({
 function Endpoint({
   x,
   y,
-  uid,
-  active,
-  reduce,
-  delay = 0,
+  role,
 }: {
   x: number;
   y: number;
-  uid: string;
-  active: boolean;
-  reduce: boolean;
-  delay?: number;
+  /** Which end of the lane this is — the source or the destination. */
+  role: "source" | "destination";
 }) {
+  const spec =
+    role === "source" ? ENDPOINT_STYLE.source : ENDPOINT_STYLE.destination;
   return (
     <g>
-      {active && (
-        <circle cx={x} cy={y} r="9" fill={`url(#glow-${uid})`}>
-          {!reduce && (
-            <animate
-              attributeName="r"
-              values="5;13;5"
-              dur="2.4s"
-              begin={`${delay * 1.1}s`}
-              repeatCount="indefinite"
-            />
-          )}
-        </circle>
+      {/* Dark keyline so the marker survives crossing a landmass. */}
+      <circle cx={x} cy={y} r={spec.r + 1} fill={ENDPOINT_STYLE.halo} fillOpacity={0.8} />
+      {role === "source" ? (
+        // Source: a solid dot — where the data leaves from.
+        <circle
+          cx={x}
+          cy={y}
+          r={spec.r}
+          fill={spec.fill}
+          stroke="#fff"
+          strokeOpacity={0.9}
+          strokeWidth="0.7"
+        />
+      ) : (
+        // Destination: a ring with a small core — where the data lands.
+        <>
+          <circle
+            cx={x}
+            cy={y}
+            r={spec.r + 0.4}
+            fill="#0b0b1c"
+            stroke={spec.fill}
+            strokeOpacity={0.95}
+            strokeWidth="1.5"
+          />
+          <circle cx={x} cy={y} r={Math.max(spec.r - 1.6, 0.8)} fill={spec.fill} />
+        </>
       )}
-      {/* Keyline first, node on top: a 1px ring is the difference between a
-          city marker and a speck of noise on the coastline behind it. */}
-      <circle
-        cx={x}
-        cy={y}
-        r={(active ? ENDPOINT_STYLE.active.r : ENDPOINT_STYLE.idle.r) + 0.9}
-        fill={ENDPOINT_STYLE.halo}
-        fillOpacity={0.75}
-      />
-      <circle
-        cx={x}
-        cy={y}
-        r={active ? ENDPOINT_STYLE.active.r : ENDPOINT_STYLE.idle.r}
-        fill={active ? ENDPOINT_STYLE.active.fill : ENDPOINT_STYLE.idle.fill}
-        stroke={active ? "#fff" : "#c9c9ec"}
-        strokeOpacity={active ? 0.9 : 0.45}
-        strokeWidth="0.7"
-      />
     </g>
   );
 }

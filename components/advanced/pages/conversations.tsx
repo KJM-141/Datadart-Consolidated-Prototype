@@ -74,7 +74,7 @@ export function ConversationsAdvanced() {
       return;
     }
     toast.success(`Proposal ${order.displayId} drafted`, {
-      description: `${session.displayId} converted — the draft is in Orders at stage Proposal.`,
+      description: `${session.displayId} converted, the draft is in Orders at stage Proposal.`,
       action: {
         label: "Open order",
         onClick: () => router.push(`/customer/history/${order.displayId}`),
@@ -185,19 +185,19 @@ export function ConversationsAdvanced() {
                           {c.facts.sizeTB
                             ? `${c.facts.sizeTB.toLocaleString()} TB`
                             : "Volume pending"}
-                          <span className="mx-1.5 text-muted-foreground/50">·</span>
+                          <span aria-hidden className="mx-1.5 inline-block h-3 w-px translate-y-[1px] bg-muted-foreground/30" />
                           {c.facts.sourceLocation ?? "Source pending"}
                           <span className="mx-1.5 text-(--plasma)">→</span>
                           {c.facts.destination ?? "Destination pending"}
                           {c.facts.serviceLevel === "White Glove" && (
                             <span className="ml-1.5 text-(--rose)">
-                              · White Glove
+                             , White Glove
                             </span>
                           )}
                         </p>
                         {c.contactEmail && (
                           <p className="mt-1 text-[11px] text-muted-foreground">
-                            {c.company} · {c.contactEmail}
+                            {c.company}, {c.contactEmail}
                           </p>
                         )}
                       </div>
@@ -223,7 +223,7 @@ export function ConversationsAdvanced() {
                           {fmtUSD(c.estimateRange.max)}
                         </span>
                       )}
-                      {c.estimateRange && " · "}
+                      {c.estimateRange && ", "}
                       {c.lastActiveAt}
                     </p>
                     <div className="flex flex-wrap gap-2">

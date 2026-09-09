@@ -37,7 +37,7 @@ const STEPS = [
   {
     icon: Calculator,
     title: "Size & price",
-    body: "The sizer picks the right BRYCK fleet and returns a ballpark range plus a door-to-door timeline — before we ask for your details.",
+    body: "The sizer picks the right BRYCK fleet and returns a ballpark range plus a door-to-door timeline, before we ask for your details.",
   },
   {
     icon: FileText,
@@ -47,7 +47,7 @@ const STEPS = [
   {
     icon: Truck,
     title: "Transfer & track",
-    body: "We provision and ship. You watch all ten stages live — including copy progress straight off the device.",
+    body: "We provision and ship. You watch all ten stages live, including copy progress straight off the device.",
   },
 ];
 
@@ -109,7 +109,7 @@ export function HowItWorksAdvanced() {
         />
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
           Every order has a visible journey, every handoff has an owner, and
-          every promise — speed, security, certified erasure — is backed by a
+          every promise, speed, security, certified erasure, is backed by a
           downloadable artifact.
         </p>
         <div className="mt-7 flex flex-wrap gap-2.5">
@@ -247,7 +247,7 @@ export function HowItWorksAdvanced() {
           Resources
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Datasheets, whitepapers, blogs and videos — everything in one place.
+          Datasheets, whitepapers, blogs and videos, everything in one place.
         </p>
 
         <h3 className="mt-7">
@@ -283,7 +283,7 @@ export function HowItWorksAdvanced() {
                       {p.name}
                     </span>
                     <span className="mt-0.5 block truncate text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                      {p.chips[0]} · {p.chips[1]}
+                      {p.chips[0]}, {p.chips[1]}
                     </span>
                     <span className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-(--plasma)">
                       <Download className="size-3.5" /> Datasheet (PDF)

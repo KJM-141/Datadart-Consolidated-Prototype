@@ -83,12 +83,18 @@ export function RightRail({
             })()
       }
       className={cn(
-        "h-full flex-col overflow-y-auto bg-chrome transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+        // `overflow-x-hidden` clips the pre-laid content while the width grows,
+        // so opening reads as a clean left-to-right reveal instead of the panel
+        // reflowing from 3.5rem to 22rem — which is what made the open feel
+        // abrupt next to the smooth close.
+        "h-full flex-col overflow-x-hidden overflow-y-auto bg-chrome transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
         className,
       )}
     >
       {isExpanded ? (
-        <>
+        // Fixed at the final width (not the animating container width) so text
+        // is laid out once and simply revealed as the panel opens.
+        <div className={cn("flex flex-col", !forceExpanded && "w-[22rem]")}>
           {!forceExpanded && (
             <div className="flex h-11 shrink-0 items-center justify-between border-b border-hair px-4">
               <HudLabel className="text-ink-3">Panel</HudLabel>
@@ -111,7 +117,7 @@ export function RightRail({
               badge={mounted ? <SectionBadge id={s} /> : null}
             />
           ))}
-        </>
+        </div>
       ) : (
         // ── Collapsed: icon strip ──────────────────────────────────────────
         <div className="flex flex-col items-center gap-1 py-3">
@@ -344,7 +350,7 @@ function HardwareBody() {
                     {p.name}
                   </Link>
                   <p className="mt-0.5 font-mono text-[10.5px] leading-snug text-ink-3">
-                    {p.chips[0]} · {p.chips[1]}
+                    {p.chips[0]}, {p.chips[1]}
                   </p>
                 </div>
               </div>
@@ -461,7 +467,7 @@ function CartBody() {
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[12.5px] leading-snug">{i.model}</span>
               <span className="mt-0.5 block font-mono text-[10.5px] text-ink-3">
-                {i.detail} · ×{i.qty}
+                {i.detail}, ×{i.qty}
               </span>
             </span>
             <button

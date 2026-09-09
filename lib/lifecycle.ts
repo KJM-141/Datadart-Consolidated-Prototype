@@ -38,7 +38,7 @@ export const STAGE_BLURB: Record<Stage, string> = {
   Onboarding: "Site readiness, shipping windows and secure credential collection.",
   "PO & Advance": "Purchase order raised and advance invoice settled.",
   Provisioning: "Device prepared, encrypted and configured for your transfer.",
-  "Data Load": "Your data is being written to the device — live progress below.",
+  "Data Load": "Your data is being written to the device, live progress below.",
   Shipment: "Sealed device in transit with chain-of-custody tracking.",
   "DT2 Upload": "Data uploaded from our transfer facility into your cloud.",
   Verification: "Checksums compared end-to-end; verification report produced.",

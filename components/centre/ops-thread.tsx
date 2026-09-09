@@ -35,7 +35,7 @@ const SEED: Msg[] = [
   {
     id: "s1",
     from: "ops",
-    text: "Morning — the Bengaluru pickup is confirmed for Thursday 09:00 IST. I'll send the driver details the night before.",
+    text: "Morning, the Bengaluru pickup is confirmed for Thursday 09:00 IST. I'll send the driver details the night before.",
     at: "09:14",
   },
   {
@@ -87,7 +87,7 @@ export function OpsThread() {
           {
             id: `m${seq++}`,
             from: "ops",
-            text: "Got it — looking now. I'll come back to you within the hour.",
+            text: "Got it, looking now. I'll come back to you within the hour.",
             at: "Just now",
           },
         ]);

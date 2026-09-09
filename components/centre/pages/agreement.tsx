@@ -96,7 +96,7 @@ export function AgreementPage({ displayId }: { displayId: string }) {
       <PageHead
         eyebrow="Proposal & agreement"
         title="Your proposal"
-        description={`${order.volumeTB.toLocaleString()} TB · ${order.source.label} → ${order.destination.label}`}
+        description={`${order.volumeTB.toLocaleString()} TB, ${order.source.label} → ${order.destination.label}`}
         action={
           <Tag tone={paid ? "ok" : signedAll ? "info" : "warn"}>
             {paid ? "Active" : signedAll ? "Awaiting payment" : "Awaiting signature"}
@@ -152,7 +152,7 @@ export function AgreementPage({ displayId }: { displayId: string }) {
               items={[
                 { label: "Volume", value: `${order.volumeTB.toLocaleString()} TB` },
                 { label: "Service", value: order.serviceLevel },
-                { label: "Contract", value: total ? fmtUSD(total) : "—" },
+                { label: "Contract", value: total ? fmtUSD(total) : "N/A" },
               ]}
             />
 
@@ -251,10 +251,10 @@ export function AgreementPage({ displayId }: { displayId: string }) {
             <Facts
               cols={2}
               items={[
-                { label: "Advance (50%)", value: advance ? fmtUSD(advance) : "—" },
+                { label: "Advance (50%)", value: advance ? fmtUSD(advance) : "N/A" },
                 {
                   label: "Balance (50%)",
-                  value: advance ? fmtUSD(total - advance) : "—",
+                  value: advance ? fmtUSD(total - advance) : "N/A",
                   sub: "at Verification",
                 },
               ]}
@@ -264,7 +264,7 @@ export function AgreementPage({ displayId }: { displayId: string }) {
               {paid ? (
                 <p className="flex items-center gap-2 text-[12px] text-ink-2">
                   <Check className="size-3.5 text-success" />
-                  Paid — this transfer is active and provisioning has started.
+                  Paid, this transfer is active and provisioning has started.
                 </p>
               ) : (
                 <button
@@ -272,7 +272,7 @@ export function AgreementPage({ displayId }: { displayId: string }) {
                   disabled={!signedAll}
                   onClick={() => {
                     setPaid(true);
-                    toast.success("Payment received — transfer activated", {
+                    toast.success("Payment received, transfer activated", {
                       description: "Provisioning starts today.",
                     });
                   }}

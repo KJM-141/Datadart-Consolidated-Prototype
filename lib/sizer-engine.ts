@@ -175,9 +175,9 @@ const EQUIPMENT: Record<EquipmentType, EquipmentSpec> = {
     ],
     throughputGBs: 10,
     description: "Rugged edge AI flyaway kit",
-    tagline: "Highest density · finest capacity granularity",
+    tagline: "Highest density, finest capacity granularity",
     connectivity: "10 / 25 / 40 / 100 Gbps",
-    protocols: "NFS · SMB · S3",
+    protocols: "NFS, SMB, S3",
     recommended: true,
   },
   bryck: {
@@ -188,7 +188,7 @@ const EQUIPMENT: Record<EquipmentType, EquipmentSpec> = {
     description: "Enterprise-grade edge accelerator",
     tagline: "Petabyte-scale rugged transport",
     connectivity: "10 / 25 / 40 / 100 Gbps",
-    protocols: "NFS · SMB · S3",
+    protocols: "NFS, SMB, S3",
   },
   "bryck-turbo": {
     id: "bryck-turbo",
@@ -196,9 +196,9 @@ const EQUIPMENT: Record<EquipmentType, EquipmentSpec> = {
     capacities: [512, 448, 384, 320, 256, 192, 128, 64],
     throughputGBs: 10,
     description: "High-speed compact edge device",
-    tagline: "Compact · high throughput",
+    tagline: "Compact, high throughput",
     connectivity: "10 / 25 / 40 / 100 Gbps",
-    protocols: "NFS · SMB · S3",
+    protocols: "NFS, SMB, S3",
   },
   "bryck-mini": {
     id: "bryck-mini",
@@ -206,9 +206,9 @@ const EQUIPMENT: Record<EquipmentType, EquipmentSpec> = {
     capacities: [512, 256, 128],
     throughputGBs: 3,
     description: "Compact edge device for constrained deployments",
-    tagline: "Lightweight · field-portable",
+    tagline: "Lightweight, field-portable",
     connectivity: "10 / 25 Gbps",
-    protocols: "NFS · SMB · S3",
+    protocols: "NFS, SMB, S3",
   },
 };
 
@@ -366,7 +366,7 @@ export function runSizer(request: SizerRequest): Sizing {
   // Bill of materials.
   const bom: BomLine[] = fleet.grouped.map((g) => ({
     ref: `DATADART-${equipment.id.toUpperCase()}-${g.capacityTB}TB`,
-    description: `${equipment.name} · ${capacityLabel(g.capacityTB)} transport unit`,
+    description: `${equipment.name}, ${capacityLabel(g.capacityTB)} transport unit`,
     qty: g.count,
     unit: "unit",
   }));
@@ -379,12 +379,12 @@ export function runSizer(request: SizerRequest): Sizing {
     .map((g) => `${g.count}× ${capacityLabel(g.capacityTB)}`)
     .join(" + ");
   rationale.push({
-    title: `Fleet — ${fleet.count}× ${equipment.name}`,
+    title: `Fleet, ${fleet.count}× ${equipment.name}`,
     body: `${fleetDesc} selected (${capacityLabel(fleet.rawTB)} raw → ${capacityLabel(fleet.usableTB)} usable). The smallest configuration that carries the protected payload is chosen to minimise over-provisioning.`,
   });
 
   rationale.push({
-    title: `Data protection — ${RAID_LABEL[request.raidConfig]}`,
+    title: `Data protection, ${RAID_LABEL[request.raidConfig]}`,
     body:
       request.raidConfig === "none"
         ? "No parity is reserved, so 100% of raw capacity is usable. The payload is carried without on-device redundancy."
@@ -410,17 +410,17 @@ export function runSizer(request: SizerRequest): Sizing {
 
   if (comparison.dataDartFaster) {
     rationale.push({
-      title: "Verdict — DataDart wins",
-      body: `DataDart completes the move in ${comparison.dataDartHours.toFixed(1)} h versus ${comparison.wireHours.toFixed(1)} h over a ${wireGbps.toFixed(2)} Gbps wire — a ${comparison.speedup.toFixed(1)}× speed-up (${comparison.savingsPercent.toFixed(1)}% faster).`,
+      title: "Verdict, DataDart wins",
+      body: `DataDart completes the move in ${comparison.dataDartHours.toFixed(1)} h versus ${comparison.wireHours.toFixed(1)} h over a ${wireGbps.toFixed(2)} Gbps wire, a ${comparison.speedup.toFixed(1)}× speed-up (${comparison.savingsPercent.toFixed(1)}% faster).`,
     });
   } else {
     rationale.push({
-      title: "Verdict — wire transfer wins",
+      title: "Verdict, wire transfer wins",
       body: `For this payload and network the wire finishes first (${comparison.wireHours.toFixed(1)} h vs ${comparison.dataDartHours.toFixed(1)} h). DataDart's advantage grows with larger volumes and slower networks.`,
       warn: true,
     });
     warnings.push(
-      "Wire transfer is faster than DataDart for these inputs — physical transport pays off at larger data volumes or over slower networks.",
+      "Wire transfer is faster than DataDart for these inputs, physical transport pays off at larger data volumes or over slower networks.",
     );
   }
 
@@ -450,7 +450,7 @@ export function runSizer(request: SizerRequest): Sizing {
 
 /** Human-friendly duration: sec / min / `Hh Mm` / `Dd Hh`. */
 export function formatHours(hours: number): string {
-  if (!Number.isFinite(hours) || hours < 0) return "—";
+  if (!Number.isFinite(hours) || hours < 0) return "N/A";
   if (hours === 0) return "0 sec";
   if (hours < 1 / 60) return `${Math.round(hours * 3600)} sec`;
   if (hours < 1) return `${Math.round(hours * 60)} min`;
@@ -465,7 +465,7 @@ export function formatHours(hours: number): string {
 }
 
 export function formatCapacityTB(tb: number): string {
-  if (!Number.isFinite(tb)) return "—";
+  if (!Number.isFinite(tb)) return "N/A";
   if (tb >= 1024) {
     const pb = tb / 1024;
     return `${Number.isInteger(pb) ? pb : pb.toFixed(pb < 10 ? 2 : 1)} PB`;
@@ -474,20 +474,20 @@ export function formatCapacityTB(tb: number): string {
 }
 
 export function formatThroughputGBs(gbs: number): string {
-  if (!Number.isFinite(gbs)) return "—";
+  if (!Number.isFinite(gbs)) return "N/A";
   if (gbs < 1) return `${Math.round(gbs * 1024)} MB/s`;
   return `${Number.isInteger(gbs) ? gbs : gbs.toFixed(1)} GB/s`;
 }
 
 export function formatGbps(gbps: number): string {
-  if (!Number.isFinite(gbps)) return "—";
+  if (!Number.isFinite(gbps)) return "N/A";
   if (gbps >= 1000) return `${(gbps / 1000).toFixed(2)} Tbps`;
   if (gbps < 1) return `${Math.round(gbps * 1000)} Mbps`;
   return `${Number.isInteger(gbps) ? gbps : gbps.toFixed(2)} Gbps`;
 }
 
 export function formatMultiplier(x: number): string {
-  if (!Number.isFinite(x)) return "—";
+  if (!Number.isFinite(x)) return "N/A";
   return `${x >= 10 ? Math.round(x) : x.toFixed(1)}×`;
 }
 

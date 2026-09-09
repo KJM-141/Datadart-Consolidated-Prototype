@@ -100,7 +100,7 @@ export function TopBar({
             </Link>
           ) : (
             <span className="text-[12px] text-ink-3">
-              Nothing in flight — start a transfer to see it here
+              Nothing in flight, start a transfer to see it here
             </span>
           ))}
       </div>

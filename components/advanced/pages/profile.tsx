@@ -204,7 +204,7 @@ export function ProfileAdvanced() {
                   >
                     <div className="flex gap-2">
                       <span className="flex h-12 shrink-0 items-center rounded-xl bg-[color-mix(in_oklab,var(--muted)_65%,transparent)] px-3.5 text-sm font-medium text-muted-foreground shadow-[inset_0_0_0_1px_var(--border)]">
-                        {draft.countryCode || "+—"}
+                        {draft.countryCode || "+"}
                       </span>
                       <Input
                         id="pf-phone"
@@ -221,7 +221,7 @@ export function ProfileAdvanced() {
               ) : (
                 <dl className="space-y-3.5">
                   <Row label="First name" value={p.firstName} />
-                  <Row label="Last name" value={p.lastName || "—"} />
+                  <Row label="Last name" value={p.lastName || "N/A"} />
                   <Row label="Email" value={p.email} />
                   <Row
                     label="Contact number"
@@ -252,8 +252,8 @@ export function ProfileAdvanced() {
               ) : (
                 <dl className="space-y-3.5">
                   <Row label="Address" value={p.address.address} />
-                  <Row label="Area" value={p.address.area || "—"} />
-                  <Row label="Landmark" value={p.address.landmark || "—"} />
+                  <Row label="Area" value={p.address.area || "N/A"} />
+                  <Row label="Landmark" value={p.address.landmark || "N/A"} />
                   <Row
                     label="Location"
                     value={`${p.address.city}, ${p.address.state}, ${p.address.country}`}

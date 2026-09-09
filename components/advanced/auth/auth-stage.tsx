@@ -1,28 +1,17 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Fingerprint, Globe2, Lock, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { GlobeCinematic } from "@/components/brand/globe-cinematic";
-import { LiveDot } from "@/components/advanced/kit/hud";
 import { useSceneParallax } from "@/components/advanced/kit/interactions";
 import { EASE_ADV } from "@/lib/advanced-motion";
 import { DeckBoot } from "./boot-sequence";
 
-/* Four claims, stated once and left alone. An earlier pass looped these on a
-   marquee, which turned the page's only real substance into wallpaper. */
-const TRUST = [
-  { icon: ShieldCheck, label: "AES-256 end to end" },
-  { icon: Fingerprint, label: "Passkeys & SSO" },
-  { icon: Globe2, label: "14 regions · 3 clouds" },
-  { icon: Lock, label: "SAML 2.0 · OIDC · SCIM" },
-];
-
 /**
- * ── The landing ───────────────────────────────────────────────────────────
+ * ── Auth stage ────────────────────────────────────────────────────────────
  *
- * The sign-in page *is* the landing page, and this frame is everything behind
- * the form: one full-bleed establishing shot, a header, and a footer.
+ * Everything behind the sign-in / sign-up card: one full-bleed establishing
+ * shot and a slim header. No page footer — the card carries its own links.
  *
  * `GlobeCinematic` carries the whole frame: Earth from orbit, turning, with
  * the terminator across it and the cities lit on the night side. It is placed
@@ -81,14 +70,9 @@ export function AuthStage({ children }: { children: React.ReactNode }) {
           initial={{ opacity: 0, y: -14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: EASE_ADV, delay: 0.15 }}
-          className="relative z-20 flex items-center justify-between gap-4 px-5 py-5 sm:px-9"
+          className="relative z-20 flex items-center gap-4 px-5 py-5 sm:px-9"
         >
           <Logo size="md" href={null} />
-
-          <span className="hidden items-center gap-2 rounded-full px-3.5 py-2 text-[11px] text-white/50 ring-1 ring-inset ring-white/10 backdrop-blur-md sm:inline-flex">
-            <LiveDot tone="success" />
-            Secure channel
-          </span>
         </motion.header>
 
         {/* ── Console ───────────────────────────────────────────────────── */}
@@ -102,29 +86,6 @@ export function AuthStage({ children }: { children: React.ReactNode }) {
             {children}
           </motion.div>
         </div>
-
-        {/* ── Telemetry footer ──────────────────────────────────────────── */}
-        <motion.footer
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: EASE_ADV, delay: 0.6 }}
-          className="relative z-20 border-t border-white/8 bg-white/[0.02] backdrop-blur-md"
-        >
-          <ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 px-5 py-3.5">
-            {TRUST.map((t) => (
-              <li
-                key={t.label}
-                className="inline-flex items-center gap-2 text-[11.5px] text-white/40"
-              >
-                <t.icon className="size-3.5 text-white/30" />
-                {t.label}
-              </li>
-            ))}
-          </ul>
-          <p className="pb-3.5 text-center text-[11px] text-white/20">
-            © 2026 DataDart by T|Second
-          </p>
-        </motion.footer>
       </main>
     </>
   );

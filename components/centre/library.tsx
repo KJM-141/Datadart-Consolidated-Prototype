@@ -47,7 +47,7 @@ interface Answer {
 const ANSWERS: Answer[] = [
   {
     q: "Order or subscription?",
-    a: "An order is a one-time transfer — you describe the volume, window and endpoints and our team executes the move. A subscription is month-to-month device rental shipped to your site, for recurring or unpredictable work.",
+    a: "An order is a one-time transfer, you describe the volume, window and endpoints and our team executes the move. A subscription is month-to-month device rental shipped to your site, for recurring or unpredictable work.",
     ask: "Should I raise an order or take a subscription?",
   },
   {
@@ -77,7 +77,7 @@ const ANSWERS: Answer[] = [
   },
   {
     q: "Can I get someone on site?",
-    a: "Yes — White Glove puts our engineers at your site to run the data load. You can switch a transfer to White Glove at any point before Provisioning.",
+    a: "Yes, White Glove puts our engineers at your site to run the data load. You can switch a transfer to White Glove at any point before Provisioning.",
     ask: "What does White Glove include?",
   },
 ];

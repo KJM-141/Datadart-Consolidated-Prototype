@@ -86,7 +86,7 @@ const STEPS = [
 
 const endpointLabel = (e: EndpointState): string => {
   if (e.kind === "Public cloud")
-    return `${e.cloud ?? "Cloud"} · ${e.address.city || "cloud"}`;
+    return `${e.cloud ?? "Cloud"}, ${e.address.city || "cloud"}`;
   const code = e.address.country
     ? (getCountry(e.address.country)?.code ?? "")
     : "";
@@ -237,7 +237,7 @@ export function RaiseOrderWizard({
         {
           stage: "Proposal",
           at: format(new Date(), "yyyy-MM-dd"),
-          owner: "Sales — awaiting review",
+          owner: "Sales, awaiting review",
         },
       ],
       progress: 0,
@@ -268,7 +268,7 @@ export function RaiseOrderWizard({
     setSubmitting(false);
     setPlacedId(id);
     toast.success("Order raised successfully!", {
-      description: `${id} · ${volume} TB · ${endpointLabel(source)} → ${endpointLabel(destination)}`,
+      description: `${id}, ${volume} TB, ${endpointLabel(source)} → ${endpointLabel(destination)}`,
     });
   };
 
@@ -305,7 +305,7 @@ export function RaiseOrderWizard({
             <p className="text-xs text-muted-foreground">
               {placedId
                 ? "Request submitted"
-                : `Step ${step + 1} of ${STEPS.length} — ${STEPS[step]}`}
+                : `Step ${step + 1} of ${STEPS.length}, ${STEPS[step]}`}
             </p>
           </div>
           <button
@@ -956,7 +956,7 @@ function SummaryRow({
             {value}
           </motion.span>
         ) : (
-          <span className="text-border">—</span>
+          <span className="text-border">N/A</span>
         )}
       </AnimatePresence>
     </div>

@@ -170,7 +170,7 @@ export function PortalFrame({
               >
                 <LiveDot tone="success" />
                 <span className="truncate text-[11px] text-ink-2">
-                  Stage {stageIndex(focus.stage) + 1}/{STAGES.length} · {focus.stage}
+                  Stage {stageIndex(focus.stage) + 1}/{STAGES.length}, {focus.stage}
                 </span>
               </button>
             )}

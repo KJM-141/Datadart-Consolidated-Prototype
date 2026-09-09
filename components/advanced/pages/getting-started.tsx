@@ -114,7 +114,7 @@ export function GettingStarted() {
       say(topic.answer, [
         ...(topic.actions ?? []).filter((a) => a.href),
         ...(following
-          ? [{ label: `Next — ${following.prompt}`, topic: "__next" }]
+          ? [{ label: `Next, ${following.prompt}`, topic: "__next" }]
           : [{ label: "Scope my first transfer", href: PATHS.start }]),
       ]);
     },
@@ -289,7 +289,7 @@ export function GettingStarted() {
             {typing
               ? "typing…"
               : step >= 0
-                ? `guided tour · ${step + 1} of ${TOUR.length}`
+                ? `guided tour, ${step + 1} of ${TOUR.length}`
                 : "here to explain, not to sell"}
           </p>
         </div>

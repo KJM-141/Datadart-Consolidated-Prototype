@@ -174,9 +174,9 @@ export function ProfilePage() {
               </div>
             ) : (
               <dl className="divide-y divide-hair">
-                <Row k="Name" v={`${p.firstName} ${p.lastName}`.trim() || "—"} />
-                <Row k="Email" v={p.email || "—"} />
-                <Row k="Phone" v={p.phone || "—"} />
+                <Row k="Name" v={`${p.firstName} ${p.lastName}`.trim() || "N/A"} />
+                <Row k="Email" v={p.email || "N/A"} />
+                <Row k="Phone" v={p.phone || "N/A"} />
                 <Row
                   k="Address"
                   v={
@@ -188,7 +188,7 @@ export function ProfilePage() {
                       p.address.country,
                     ]
                       .filter(Boolean)
-                      .join(", ") || "—"
+                      .join(", ") || "N/A"
                   }
                 />
               </dl>

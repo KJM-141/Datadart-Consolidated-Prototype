@@ -139,8 +139,8 @@ export function CartPage() {
                       <p className="mt-0.5 font-mono text-[10.5px] text-ink-3">
                         {item.detail}
                         {item.monthlyRate
-                          ? ` · ${fmtUSD(item.monthlyRate)}/mo each`
-                          : " · priced at proposal"}
+                          ? `, ${fmtUSD(item.monthlyRate)}/mo each`
+                          : ", priced at proposal"}
                       </p>
                     </div>
 
@@ -170,7 +170,7 @@ export function CartPage() {
                     <span className="w-20 shrink-0 text-right font-mono text-[12px] tabular-nums">
                       {item.monthlyRate
                         ? `${fmtUSD(item.monthlyRate * item.qty)}`
-                        : "—"}
+                        : "N/A"}
                     </span>
 
                     <button

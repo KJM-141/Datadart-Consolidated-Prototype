@@ -189,7 +189,7 @@ export function LifecyclePanel({
                 <span className="min-w-0 flex-1">
                   <span className="block text-[11.5px]">{e.stage}</span>
                   <span className="font-mono text-[10px] text-ink-3">
-                    {e.at.slice(0, 10)} · {e.owner}
+                    {e.at.slice(0, 10)}, {e.owner}
                   </span>
                 </span>
               </li>
@@ -246,9 +246,7 @@ export function StagePill({
       <span className="tabular-nums">
         Stage {at + 1}/{STAGES.length}
       </span>
-      <span aria-hidden className="text-ink-3">
-        ·
-      </span>
+      <span aria-hidden className="h-3 w-px bg-hair" />
       <span>{order.stage}</span>
     </span>
   );

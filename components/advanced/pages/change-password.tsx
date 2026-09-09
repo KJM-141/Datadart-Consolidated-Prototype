@@ -67,7 +67,7 @@ export function ChangePasswordAdvanced() {
       <PageHeading
         eyebrow="Security"
         title="Change password"
-        description="Pick a strong password — the policy readout confirms each requirement as you type."
+        description="Pick a strong password, the policy readout confirms each requirement as you type."
       />
 
       <motion.div variants={bloomSoft}>

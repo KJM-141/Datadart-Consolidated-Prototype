@@ -98,7 +98,7 @@ export function ConversationsPage() {
           items={[
             { label: "Sessions", value: rows.length },
             { label: "Priced", value: priced },
-            { label: "Pipeline", value: pipeline ? fmtUSD(pipeline) : "—" },
+            { label: "Pipeline", value: pipeline ? fmtUSD(pipeline) : "N/A" },
           ]}
         />
       </div>
@@ -165,7 +165,7 @@ function SessionCard({ session }: { session: ConversationSession }) {
         <Tag tone={STATE_TONE[session.state]}>{STATE_LABEL[session.state]}</Tag>
         <span className="text-[10.5px] text-ink-3">{session.lastActiveAt}</span>
         <span className="ml-auto font-mono text-[12px] tabular-nums">
-          {session.estimateRange ? fmtUSD(session.estimateRange.min) : "—"}
+          {session.estimateRange ? fmtUSD(session.estimateRange.min) : "N/A"}
         </span>
       </div>
 
@@ -245,7 +245,7 @@ function SessionCard({ session }: { session: ConversationSession }) {
           >
             <Sparkles className="size-3.5" />
             {session.convertedOrderId
-              ? `Converted — ${session.convertedOrderId}`
+              ? `Converted, ${session.convertedOrderId}`
               : "Convert to proposal"}
           </button>
         </div>

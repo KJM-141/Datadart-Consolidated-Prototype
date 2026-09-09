@@ -40,16 +40,16 @@ const ASK: Record<Slot, (f: TransferFacts) => string> = {
   size: () =>
     "Tell me roughly **how much data** you need to move and I'll size it.",
   sourceLocation: (f) =>
-    `**${f.sizeTB?.toLocaleString()} TB** — where does that live today?`,
+    `**${f.sizeTB?.toLocaleString()} TB**, where does that live today?`,
   destination: () => "And where should it land?",
   serviceLevel: () =>
     "Do you want **White Glove**, where our engineers run the load on site?",
   timeline: () => "When does it need to be done by?",
   frequency: () =>
     "**How often do you run a move like this?** If it repeats, renting the fleet beats shipping it back and forth.",
-  compliance: () => "Last one — any compliance requirements on this data?",
+  compliance: () => "Last one, any compliance requirements on this data?",
   complete: () =>
-    "That's everything I need. Your draft is saved — request a detailed proposal whenever you're ready.",
+    "That's everything I need. Your draft is saved, request a detailed proposal whenever you're ready.",
 };
 
 export interface Turn {
@@ -168,7 +168,7 @@ export function useAssistant(): Assistant {
         say(
           {
             role: "agent",
-            text: "I've **redacted that from the transcript** — please don't share keys or bucket paths here. Technical details are collected after your agreement is signed, through an audited channel.",
+            text: "I've **redacted that from the transcript**, please don't share keys or bucket paths here. Technical details are collected after your agreement is signed, through an audited channel.",
           },
           720,
         );
@@ -215,7 +215,7 @@ export function useAssistant(): Assistant {
             role: "agent",
             text: `Ballpark: **${fmtRange(e)}**, done in **${formatHours(
               e.sizing.timeline.totalHours,
-            )}** door to door — against ${formatHours(
+            )}** door to door, against ${formatHours(
               e.sizing.comparison.wireHours,
             )} over a ${e.lineSpeedMbps} Mbps line, on **${e.deviceLabel}**.`,
             estimate: true,

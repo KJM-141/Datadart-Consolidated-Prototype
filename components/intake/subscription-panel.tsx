@@ -90,7 +90,7 @@ export function SubscriptionPanel({
       ) : facts.frequency === "One-off" ? (
         <Empty
           title="A one-off needs no rental"
-          body="You'll be quoted for a single move — the devices go back when the data lands. Change the cadence above if it turns out to repeat."
+          body="You'll be quoted for a single move, the devices go back when the data lands. Change the cadence above if it turns out to repeat."
         />
       ) : plan ? (
         <Plan plan={plan} onAdd={addToCart} mounted={mounted} />
@@ -157,9 +157,9 @@ function Plan({
   const add = () => {
     plan.items.forEach(onAdd);
     toast.success("Plan added to your manifest", {
-      description: `${plan.units} device${plan.units === 1 ? "" : "s"} · ${fmtUSD(
+      description: `${plan.units} device${plan.units === 1 ? "" : "s"}, ${fmtUSD(
         plan.monthlyTotal,
-      )}/month · ${plan.termMonths}-month term`,
+      )}/month, ${plan.termMonths}-month term`,
     });
   };
 

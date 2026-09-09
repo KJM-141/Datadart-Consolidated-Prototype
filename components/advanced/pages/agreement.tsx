@@ -114,7 +114,7 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
         </div>
         <p className="mt-2 text-[13px] font-medium">
           {order.volumeTB.toLocaleString()} TB
-          <span className="mx-1.5 text-muted-foreground/50">·</span>
+          <span aria-hidden className="mx-1.5 inline-block h-3 w-px translate-y-[1px] bg-muted-foreground/30" />
           {order.source.label}
           <span className="mx-1.5 text-(--plasma)">→</span>
           {order.destination.label}
@@ -150,7 +150,7 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
             <Counter value={total} prefix="$" />
           </p>
           <p className="mt-1.5 text-[11px] text-muted-foreground">
-            Valid for 30 days · rate card {order.estimate?.ratesVersion}
+            Valid for 30 days, rate card {order.estimate?.ratesVersion}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button
@@ -224,7 +224,7 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
           locked={!signedAll}
         >
           <p className="text-[12.5px] text-muted-foreground">
-            50% advance — invoice auto-issued on final signature.
+            50% advance, invoice auto-issued on final signature.
           </p>
           <p className="mt-3 text-[1.6rem] font-semibold leading-none tabular-nums plasma-text">
             <Counter value={advance} prefix="$" />
@@ -238,7 +238,7 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
               type="button"
               onClick={() => {
                 setPaid(true);
-                toast.success("Payment received — order activated", {
+                toast.success("Payment received, order activated", {
                   description: "Provisioning starts now.",
                 });
               }}
@@ -258,8 +258,8 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
             <span className="font-semibold text-foreground">
               Only after activation
             </span>{" "}
-            do we collect technical details — endpoints, credentials and site
-            readiness — through a secure onboarding checklist with an encrypted,
+            do we collect technical details, endpoints, credentials and site
+            readiness, through a secure onboarding checklist with an encrypted,
             audited vault. Never in chat, never by email.
           </p>
         </HoloPanel>
@@ -288,7 +288,7 @@ export function AgreementAdvanced({ displayId }: { displayId: string }) {
                   )}
                   <ShieldCheck className="relative size-5" />
                 </span>
-                Order active — provisioning has started.
+                Order active, provisioning has started.
               </p>
               <Link
                 href={`/customer/history/${order.displayId}`}

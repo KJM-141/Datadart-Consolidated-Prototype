@@ -73,7 +73,7 @@ export function TransferSummary({
       key: "sourceLocation",
       label: "Source",
       value: facts.sourceLocation
-        ? [facts.sourceType, facts.sourceLocation].filter(Boolean).join(" — ")
+        ? [facts.sourceType, facts.sourceLocation].filter(Boolean).join(", ")
         : undefined,
       hint: "Where does the data live?",
     },
@@ -89,7 +89,7 @@ export function TransferSummary({
       label: "Estimate (ballpark)",
       value:
         estimate && !estimate.recommendOnline
-          ? `${fmtRange(estimate)} · ${formatHours(estimate.sizing.timeline.totalHours)}`
+          ? `${fmtRange(estimate)}, ${formatHours(estimate.sizing.timeline.totalHours)}`
           : undefined,
       hint: "Appears once size, source and destination are known",
       derived: true,
@@ -134,7 +134,7 @@ export function TransferSummary({
           className="inline-flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1 text-[10px] font-bold text-accent-foreground transition-opacity hover:opacity-80"
           title="Copy reference"
         >
-          DRAFT · {displayId} <Copy className="size-2.5" />
+          DRAFT, {displayId} <Copy className="size-2.5" />
         </button>
       </div>
 
@@ -148,7 +148,7 @@ export function TransferSummary({
         >
           <span className="size-1.5 shrink-0 rounded-full plasma-fill" />
           <span className="min-w-0 flex-1 text-muted-foreground">
-            {plan.cadence} plan ready —{" "}
+            {plan.cadence} plan ready,{" "}
             <span className="font-semibold text-foreground">
               {fmtUSD(plan.monthlyTotal)}/mo
             </span>
@@ -242,7 +242,7 @@ function TransferTab({
                     row.derived && filled && "text-gradient-brand font-bold",
                   )}
                 >
-                  {row.value ?? row.hint ?? "—"}
+                  {row.value ?? row.hint ?? "N/A"}
                 </motion.span>
               </AnimatePresence>
             </motion.button>
@@ -265,7 +265,7 @@ function TransferTab({
       {/* FR-1.4 — reassurance that no secrets are wanted yet */}
       <p className="flex items-start gap-2 rounded-lg border border-dashed bg-card px-3 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
         <Lock className="mt-0.5 size-3 shrink-0" />
-        No bucket names or credentials needed now — those are collected securely
+        No bucket names or credentials needed now, those are collected securely
         after agreement.
       </p>
 

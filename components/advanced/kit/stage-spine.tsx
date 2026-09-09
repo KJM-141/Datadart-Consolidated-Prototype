@@ -38,7 +38,7 @@ export function StageSpine({
         vertical ? "flex-col gap-0" : "items-start gap-0",
         className,
       )}
-      aria-label={`Order lifecycle — currently at ${stage}`}
+      aria-label={`Order lifecycle, currently at ${stage}`}
     >
       {STAGES.map((s, i) => {
         const done = i < current || (closed && i <= current);
@@ -151,7 +151,7 @@ export function StageBar({
   return (
     <div
       className={cn("flex items-center gap-1", className)}
-      aria-label={`Stage ${current + 1} of ${STAGES.length} — ${stage}`}
+      aria-label={`Stage ${current + 1} of ${STAGES.length}, ${stage}`}
     >
       {STAGES.map((s, i) => {
         const done = i < current || (closed && i <= current);

@@ -73,7 +73,7 @@ const RATIONALE: Record<Exclude<Cadence, "One-off">, string> = {
   Monthly:
     "At twelve moves a year the devices are in your hands more often than ours, so renting the fleet costs less than shipping it back and forth each time.",
   Quarterly:
-    "Four moves a year keeps the same fleet on standby between runs — no re-provisioning, and the lane stays warm.",
+    "Four moves a year keeps the same fleet on standby between runs, no re-provisioning, and the lane stays warm.",
   Ongoing:
     "A continuously running lane wants dedicated hardware. A two-year term holds the rate for the life of the pipeline.",
 };

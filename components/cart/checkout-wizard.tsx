@@ -116,7 +116,7 @@ export function CheckoutWizard({
     setSubmitting(false);
     setPlacedId(id);
     toast.success("Subscription raised successfully!", {
-      description: `${id} · ${format(range!.from!, "dd MMM")} → ${format(range!.to!, "dd MMM yy")}`,
+      description: `${id}, ${format(range!.from!, "dd MMM")} → ${format(range!.to!, "dd MMM yy")}`,
     });
   };
 
@@ -144,7 +144,7 @@ export function CheckoutWizard({
             <p className="text-xs text-muted-foreground">
               {placedId
                 ? "Subscription submitted"
-                : `Step ${step + 1} of 2 — ${STEPS[step]}`}
+                : `Step ${step + 1} of 2, ${STEPS[step]}`}
             </p>
           </div>
           <button
@@ -255,7 +255,7 @@ export function CheckoutWizard({
                             <span className="font-medium tabular-nums">
                               {days > 0
                                 ? `${days} days (${months} billing month${months !== 1 ? "s" : ""})`
-                                : "—"}
+                                : "N/A"}
                             </span>
                           </div>
                           <div className="flex justify-between border-t pt-2 text-base">

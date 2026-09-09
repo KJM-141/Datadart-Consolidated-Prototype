@@ -16,7 +16,7 @@ export const BOOT_REVEAL_MS = 2150;
 
 const TRACE = [
   "resolving portal.datadart.services",
-  "tls 1.3 · x25519 handshake",
+  "tls 1.3, x25519 handshake",
   "attesting device binding",
   "chain-of-custody ledger online",
   "secure channel established",

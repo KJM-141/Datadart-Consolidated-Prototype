@@ -93,7 +93,7 @@ function Content({ product }: { product: Product }) {
     });
     flyToCart(addBtnRef.current);
     toast.success("Added to cart", {
-      description: `${product.model}${capacity ? ` · ${capacity} TB` : ""} × ${qty}`,
+      description: `${product.model}${capacity ? `, ${capacity} TB` : ""} × ${qty}`,
     });
   };
 
@@ -325,7 +325,7 @@ function Content({ product }: { product: Product }) {
                 rel="noreferrer"
                 className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-(--plasma) hover:underline coarse:min-h-11"
               >
-                For more details — click here <ExternalLink className="size-3.5" />
+                For more details, click here <ExternalLink className="size-3.5" />
               </a>
             </HoloPanel>
           </motion.div>

@@ -53,12 +53,12 @@ import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/brand/logo-mark";
 
 const DESTINATIONS = [
-  "AWS S3 — us-east-1",
-  "AWS S3 — us-west-2",
-  "AWS S3 — eu-west-1",
-  "AWS S3 — ap-south-1",
-  "Azure Blob — Germany West",
-  "GCP Storage — europe-west2",
+  "AWS S3 us-east-1",
+  "AWS S3 us-west-2",
+  "AWS S3 eu-west-1",
+  "AWS S3 ap-south-1",
+  "Azure Blob Germany West",
+  "GCP Storage europe-west2",
   "Private data centre",
 ];
 import { ProposalModal } from "@/components/centre/proposal";
@@ -185,7 +185,7 @@ export function SizerAdvanced() {
         </h1>
         <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
           Three inputs, an instant ballpark. No account, no sales call, no gated
-          PDF — the same engine that powers our assistant.
+          PDF. The same engine that powers our assistant.
         </p>
       </motion.div>
 
@@ -292,7 +292,7 @@ export function SizerAdvanced() {
                           )}
                         </span>
                         <span className="mt-1 block text-[10px] font-medium uppercase tracking-[0.08em] leading-tight text-muted-foreground">
-                          {eq.throughputGBs} GB/s · up to{" "}
+                          {eq.throughputGBs} GB/s, up to{" "}
                           {capacityLabel(Math.max(...eq.capacities))}
                         </span>
                       </button>
@@ -304,7 +304,7 @@ export function SizerAdvanced() {
                     <LogoMark size={13} className="mt-0.5 shrink-0" />
                     <span>
                       {withheld.map((e) => e.name).join(" and ")}{" "}
-                      {withheld.length === 1 ? "is" : "are"} hidden — the
+                      {withheld.length === 1 ? "is" : "are"} hidden, the
                       catalogue cannot currently fulfil{" "}
                       {withheld.length === 1 ? "it" : "them"}, so the agent
                       will not quote {withheld.length === 1 ? "it" : "them"}{" "}
@@ -340,7 +340,7 @@ export function SizerAdvanced() {
                   <HudLabel
                     className={cn(advancedOpen && "text-(--plasma)")}
                   >
-                    Advanced — protection, throughput, logistics
+                    Advanced: protection, throughput, logistics
                   </HudLabel>
                   <ChevronDown
                     className={cn(
@@ -491,7 +491,7 @@ export function SizerAdvanced() {
                       {fmtRange(priced)}
                     </motion.p>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      ≈ ${priced.perTBMin}–{priced.perTBMax} / TB · door-to-door{" "}
+                      ≈ ${priced.perTBMin}–{priced.perTBMax} / TB, door-to-door{" "}
                       <span className="font-semibold text-foreground">
                         {formatHours(timeline.totalHours)}
                       </span>
@@ -513,7 +513,7 @@ export function SizerAdvanced() {
                       <span className="block text-[15px] font-semibold leading-none">
                         {comparison.dataDartFaster
                           ? formatMultiplier(comparison.speedup)
-                          : "—"}
+                          : "N/A"}
                       </span>
                       <span className="mt-1 block text-[8px] font-medium text-muted-foreground">
                         faster
@@ -585,7 +585,7 @@ export function SizerAdvanced() {
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3.5">
                   <Pill tone={comparison.dataDartFaster ? "success" : "warning"}>
                     {comparison.dataDartFaster
-                      ? `${formatMultiplier(comparison.speedup)} faster · saves ${formatHours(comparison.savingsHours)}`
+                      ? `${formatMultiplier(comparison.speedup)} faster, saves ${formatHours(comparison.savingsHours)}`
                       : "Wire wins at this volume"}
                   </Pill>
                   <Pill tone="ion" icon={Boxes}>

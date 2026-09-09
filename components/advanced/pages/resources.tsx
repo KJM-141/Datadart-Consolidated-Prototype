@@ -59,7 +59,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between an Order and a Subscription?",
-    a: "An Order is a one-time data transfer: you describe the volume, the time window, and the source and destination, and our team executes the move. A Subscription is month-to-month rental of devices shipped to your site — ideal for recurring or unpredictable transfers, with discounts on longer terms.",
+    a: "An Order is a one-time data transfer: you describe the volume, the time window, and the source and destination, and our team executes the move. A Subscription is month-to-month rental of devices shipped to your site, ideal for recurring or unpredictable transfers, with discounts on longer terms.",
   },
   {
     q: "How is my data protected in transit?",
@@ -75,11 +75,11 @@ const FAQS = [
   },
   {
     q: "Can I get in-person help?",
-    a: "Yes — when raising an order you can request in-person assistance from T|Second, and our support team will coordinate an engineer for capture and hand-off at your site.",
+    a: "Yes, when raising an order you can request in-person assistance from T|Second, and our support team will coordinate an engineer for capture and hand-off at your site.",
   },
   {
     q: "How do I cancel an order or subscription?",
-    a: "Open the record on the Orders or Subscription page and use the Cancel action in the expanded view — it moves to Closed immediately and our team is notified.",
+    a: "Open the record on the Orders or Subscription page and use the Cancel action in the expanded view, it moves to Closed immediately and our team is notified.",
   },
 ];
 
@@ -99,7 +99,7 @@ export function ResourcesAdvanced() {
       <PageHeading
         eyebrow="Knowledge hub"
         title="Resources"
-        description="Everything in one place — product datasheets, technical whitepapers, blogs, videos and answers to the questions we hear most."
+        description="Everything in one place, product datasheets, technical whitepapers, blogs, videos and answers to the questions we hear most."
       />
 
       {/* Datasheets */}
@@ -141,7 +141,7 @@ export function ResourcesAdvanced() {
                         {p.name}
                       </span>
                       <span className="mt-0.5 block truncate text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                        {p.chips[0]} · {p.chips[1]}
+                        {p.chips[0]}, {p.chips[1]}
                       </span>
                       <span className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-(--plasma)">
                         <Download className="size-3.5" /> Datasheet (PDF)

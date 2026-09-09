@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MAP, arcPath, project } from "@/lib/map-projection";
-import { ENDPOINT_STYLE, ROUTE_STYLE, type Emphasis } from "@/lib/map-style";
+import { ENDPOINT_STYLE, ROUTE_STYLE } from "@/lib/map-style";
+import { DeviceStop, deviceMessage } from "./map-device";
 import { MapLegend } from "./map-legend";
 import type { MapRoute } from "./world-map";
 import { cn } from "@/lib/utils";
@@ -100,16 +101,39 @@ export function MapDialog({
 
   // Dedupe endpoints for clean city markers.
   const markers = useMemo(() => {
-    const seen = new Map<string, { x: number; y: number; label: string; active: boolean }>();
+    const seen = new Map<
+      string,
+      { x: number; y: number; label: string; live: boolean; role: "source" | "destination" }
+    >();
     for (const r of routes) {
-      const add = (pt: [number, number], label: string | undefined, active: boolean) => {
+      const add = (
+        pt: [number, number],
+        label: string | undefined,
+        live: boolean,
+        role: "source" | "destination",
+      ) => {
         if (!label) return;
         const [x, y] = project(pt);
         const key = `${x.toFixed(0)},${y.toFixed(0)}`;
-        if (!seen.has(key) || active) seen.set(key, { x, y, label, active });
+        // A live marker wins over a still one at the same spot; else first wins.
+        if (!seen.has(key) || live) seen.set(key, { x, y, label, live, role });
       };
-      add(r.from, r.fromLabel, r.emphasis === "high");
-      add(r.to, r.toLabel, r.emphasis === "high");
+      if (r.emphasis === "high") {
+        // In transit: both ends of the journey.
+        add(r.from, r.fromLabel, false, "source");
+        add(r.to, r.toLabel, false, "destination");
+      } else if (r.deviceAt) {
+        // Transfer in progress: the device where it's parked, plus the other
+        // end as a plain spot so the direction stays clear.
+        const atSource = r.deviceAt === "source";
+        add(atSource ? r.from : r.to, atSource ? r.fromLabel : r.toLabel, true, r.deviceAt);
+        add(
+          atSource ? r.to : r.from,
+          atSource ? r.toLabel : r.fromLabel,
+          false,
+          atSource ? "destination" : "source",
+        );
+      }
     }
     return [...seen.values()];
   }, [routes]);
@@ -131,7 +155,7 @@ export function MapDialog({
               </span>
             </DialogTitle>
             <p className="text-xs text-muted-foreground">
-              {routes.length} route{routes.length === 1 ? "" : "s"} · drag to pan, scroll to zoom
+              {routes.length} route{routes.length === 1 ? "" : "s"}, drag to pan, scroll to zoom
             </p>
           </div>
           <button
@@ -189,12 +213,12 @@ export function MapDialog({
               </text>
             )}
 
-            {/* Same three styles as the panel map, read from `lib/map-style`,
-                so zooming in never changes what a lane means. */}
+            {/* Only in-transit lanes are drawn; a transfer in progress is shown
+                by its device badge below, not by a line. */}
             {routes.map((r) => {
+              if ((r.emphasis ?? "high") !== "high") return null;
               const d = arcPath(r.from, r.to);
-              const emph: Emphasis = r.emphasis ?? "mid";
-              const s = ROUTE_STYLE[emph];
+              const s = ROUTE_STYLE.high;
               return (
                 <g key={r.id}>
                   <path
@@ -215,7 +239,7 @@ export function MapDialog({
                     strokeDasharray={s.dash}
                     strokeLinecap="round"
                     vectorEffect="non-scaling-stroke"
-                    className={emph === "high" && !reduce ? "route-dash" : undefined}
+                    className={!reduce ? "route-dash" : undefined}
                   />
                   {s.packet && !reduce && (
                     <circle r={s.packet.r} fill="#fff">
@@ -227,26 +251,54 @@ export function MapDialog({
             })}
 
             {markers.map((m, i) => {
-              const node = m.active ? ENDPOINT_STYLE.active : ENDPOINT_STYLE.idle;
+              const spec =
+                m.role === "source"
+                  ? ENDPOINT_STYLE.source
+                  : ENDPOINT_STYLE.destination;
               return (
                 <g key={i}>
-                  {m.active && (
-                    <circle cx={m.x} cy={m.y} r={7} fill="url(#mdGlow)">
-                      {!reduce && <animate attributeName="r" values="4;10;4" dur="2.4s" repeatCount="indefinite" />}
-                    </circle>
+                  {/* A device marker replaces the endpoint dot/ring; otherwise
+                      draw the source dot or destination ring. */}
+                  {m.live ? (
+                    <DeviceStop
+                      x={m.x}
+                      y={m.y}
+                      badgeBelow
+                      message={deviceMessage(m.role, m.label)}
+                      reduce={reduce}
+                    />
+                  ) : (
+                    <>
+                      <circle cx={m.x} cy={m.y} r={spec.r + 0.9} fill={ENDPOINT_STYLE.halo} fillOpacity={0.75} />
+                      {m.role === "source" ? (
+                        <circle
+                          cx={m.x}
+                          cy={m.y}
+                          r={spec.r}
+                          fill={spec.fill}
+                          stroke="#fff"
+                          strokeOpacity={0.9}
+                          strokeWidth={0.6}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      ) : (
+                        <>
+                          <circle
+                            cx={m.x}
+                            cy={m.y}
+                            r={spec.r + 0.4}
+                            fill="#0b0b1c"
+                            stroke={spec.fill}
+                            strokeOpacity={0.95}
+                            strokeWidth={1.4}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                          <circle cx={m.x} cy={m.y} r={Math.max(spec.r - 1.6, 0.8)} fill={spec.fill} />
+                        </>
+                      )}
+                    </>
                   )}
-                  <circle cx={m.x} cy={m.y} r={node.r + 0.9} fill={ENDPOINT_STYLE.halo} fillOpacity={0.75} />
-                  <circle
-                    cx={m.x}
-                    cy={m.y}
-                    r={node.r}
-                    fill={node.fill}
-                    stroke={m.active ? "#fff" : "#c9c9ec"}
-                    strokeOpacity={m.active ? 0.9 : 0.45}
-                    strokeWidth={0.6}
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  <MapLabel x={m.x} y={m.y} text={m.label} active={m.active} />
+                  <MapLabel x={m.x} y={m.y} text={m.label} active={m.live} role={m.role} />
                 </g>
               );
             })}
@@ -288,10 +340,29 @@ function Graticule() {
   return <path d={lines.join(" ")} stroke="#ffffff" strokeOpacity="0.05" strokeWidth={0.5} fill="none" vectorEffect="non-scaling-stroke" />;
 }
 
-function MapLabel({ x, y, text, active }: { x: number; y: number; text: string; active: boolean }) {
+function MapLabel({
+  x,
+  y,
+  text,
+  active,
+  role,
+}: {
+  x: number;
+  y: number;
+  text: string;
+  active: boolean;
+  role?: "source" | "destination";
+}) {
   const w = text.length * 4.6 + 12;
+  const roleText = role === "source" ? "SOURCE" : role === "destination" ? "DESTINATION" : "";
+  const roleColor = role === "source" ? "#c9bfff" : "#7fb0ff";
   return (
     <g style={{ pointerEvents: "none" }}>
+      {roleText && (
+        <text x={x} y={y - 23} textAnchor="middle" fontSize="5.2" fontWeight={700} letterSpacing={0.5} fill={roleColor} opacity={0.95}>
+          {roleText}
+        </text>
+      )}
       <rect x={x - w / 2} y={y - 20} width={w} height={13} rx={6.5} fill="#0b0b1c" opacity={0.82} />
       <text x={x} y={y - 10.5} textAnchor="middle" fontSize="8" fontWeight={active ? 600 : 500} fill={active ? "#e6e0ff" : "#c2c2e4"}>
         {text}

@@ -106,7 +106,7 @@ export function buildSignals({ orders, subscriptions }: CentreInput): Signal[] {
       icon: BellRing,
       label: attention.length ? "Needs a decision" : "All clear",
       value: attention.length
-        ? `${attention.length} open${blocking ? ` · ${blocking} blocking` : ""}`
+        ? `${attention.length} open${blocking ? `, ${blocking} blocking` : ""}`
         : "Nothing outstanding",
       tone: blocking ? "warn" : attention.length ? undefined : "ok",
       answer: attention.length
@@ -134,7 +134,7 @@ export function buildSignals({ orders, subscriptions }: CentreInput): Signal[] {
       icon: Gauge,
       label: "Progress",
       value: focus
-        ? `Stage ${at + 1}/${STAGES.length} · ${focus.stage}`
+        ? `Stage ${at + 1}/${STAGES.length}, ${focus.stage}`
         : "No transfer in focus",
       bar: focus ? (at + 1) / STAGES.length : undefined,
       answer: focus
@@ -148,7 +148,7 @@ export function buildSignals({ orders, subscriptions }: CentreInput): Signal[] {
       group: "In flight",
       icon: Boxes,
       label: "Payload",
-      value: inMotionTB ? `${inMotionTB.toLocaleString()} TB in motion` : "—",
+      value: inMotionTB ? `${inMotionTB.toLocaleString()} TB in motion` : "N/A",
       answer: inMotionTB
         ? `${inMotionTB.toLocaleString()} TB is on a device or uploading right now.`
         : "Nothing is moving at the moment.",
@@ -158,7 +158,7 @@ export function buildSignals({ orders, subscriptions }: CentreInput): Signal[] {
       group: "Your side",
       icon: FileCheck2,
       label: "Certificates",
-      value: `${signed} signed · ${ready} ready`,
+      value: `${signed} signed, ${ready} ready`,
       tone: ready ? "warn" : undefined,
       answer: ready
         ? `${ready} document${ready === 1 ? " is" : "s are"} released and waiting on you; ${signed} already signed.`

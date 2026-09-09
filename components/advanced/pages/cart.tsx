@@ -210,7 +210,7 @@ export function CartAdvanced() {
                 </button>
 
                 <p className="mt-3.5 text-center text-[11px] leading-relaxed text-muted-foreground">
-                  Checkout raises a subscription — you&apos;ll pick the rental
+                  Checkout raises a subscription, you&apos;ll pick the rental
                   period and shipping destination next.
                 </p>
 

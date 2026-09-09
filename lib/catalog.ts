@@ -89,7 +89,7 @@ export const EXCLUDED: { id: string; reason: string }[] = EQUIPMENT_LIST.filter(
   (spec) => !EQUIPMENT_TO_SLUG[spec.id as EquipmentType],
 ).map((spec) => ({
   id: spec.id,
-  reason: `${spec.name} has no product listing — not orderable`,
+  reason: `${spec.name} has no product listing, not orderable`,
 }));
 
 /* ═══════════════════════════ Spec interrogation ══════════════════════════
@@ -111,7 +111,7 @@ function unsellableCapacities(
     .filter((g) => !entry.capacities.includes(g.capacityTB))
     .map(
       (g) =>
-        `${entry.product.name} is not sold at ${g.capacityTB} TB — orderable sizes are ${entry.capacities.join(", ")} TB`,
+        `${entry.product.name} is not sold at ${g.capacityTB} TB, orderable sizes are ${entry.capacities.join(", ")} TB`,
     );
 }
 
@@ -190,7 +190,7 @@ export function reconcileFleet(
     count: list.length,
     rawTB,
     usableTB: rawTB * raidUsable,
-    correction: `Re-planned on orderable ${entry.product.name} capacities (${entry.capacities.join(", ")} TB) — the sizing catalogue lists sizes that are not sold`,
+    correction: `Re-planned on orderable ${entry.product.name} capacities (${entry.capacities.join(", ")} TB), the sizing catalogue lists sizes that are not sold`,
   };
 }
 
@@ -242,6 +242,6 @@ export function hardwareTraits(product: Product): HardwareTraits {
     certifications: compliance
       ? compliance.split(",").map((s) => s.trim()).filter(Boolean)
       : [],
-    raidLevels: specValue(product, "raid") ?? "—",
+    raidLevels: specValue(product, "raid") ?? "N/A",
   };
 }

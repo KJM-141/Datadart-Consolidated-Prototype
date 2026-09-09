@@ -49,13 +49,13 @@ function parseSize(text: string): number | undefined {
 }
 
 const CLOUD_ALIASES: [RegExp, string][] = [
-  [/\bus[-\s]?east[-\s]?1\b/i, "AWS — us-east-1"],
-  [/\bus[-\s]?west[-\s]?2\b/i, "AWS — us-west-2"],
-  [/\beu[-\s]?west[-\s]?1\b/i, "AWS — eu-west-1"],
-  [/\bap[-\s]?south[-\s]?1\b/i, "AWS — ap-south-1"],
-  [/\bap[-\s]?northeast[-\s]?1\b/i, "AWS — ap-northeast-1"],
-  [/\beurope[-\s]?west2\b/i, "GCP — europe-west2"],
-  [/\bgermany west\b/i, "Azure — Germany West"],
+  [/\bus[-\s]?east[-\s]?1\b/i, "AWS us-east-1"],
+  [/\bus[-\s]?west[-\s]?2\b/i, "AWS us-west-2"],
+  [/\beu[-\s]?west[-\s]?1\b/i, "AWS eu-west-1"],
+  [/\bap[-\s]?south[-\s]?1\b/i, "AWS ap-south-1"],
+  [/\bap[-\s]?northeast[-\s]?1\b/i, "AWS ap-northeast-1"],
+  [/\beurope[-\s]?west2\b/i, "GCP europe-west2"],
+  [/\bgermany west\b/i, "Azure Germany West"],
 ];
 
 /** Formats destinations as "AWS — us-east-1" (FR-6.4) — never bracket text. */
@@ -221,9 +221,9 @@ export const SLOT_CHIPS: Partial<Record<Slot, string[]>> = {
     "Edge / remote site",
   ],
   destination: [
-    "AWS — us-east-1",
-    "AWS — eu-west-1",
-    "Azure — Germany West",
+    "AWS us-east-1",
+    "AWS eu-west-1",
+    "Azure Germany West",
     "Private data centre",
   ],
   serviceLevel: ["Yes, White Glove", "We'll self-manage", "What's included?"],

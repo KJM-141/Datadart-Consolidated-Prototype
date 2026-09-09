@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import {
+  DEVICE_COLOR,
   EMPHASES,
   ENDPOINT_STYLE,
   ROUTE_STYLE,
@@ -98,24 +99,53 @@ export function MapLegend({
         );
       })}
 
-      {/* The nodes. Two sizes and two fills on the map, so two entries here. */}
-      {([ENDPOINT_STYLE.active, ENDPOINT_STYLE.idle] as const).map((node) => (
-        <li key={node.label} className="flex items-center gap-2">
-          <svg width="12" height="10" viewBox="0 0 12 10" aria-hidden className="shrink-0">
-            <circle cx="6" cy="5" r={node.r + 0.9} fill={ENDPOINT_STYLE.halo} fillOpacity={0.75} />
-            <circle
-              cx="6"
-              cy="5"
-              r={node.r}
-              fill={node.fill}
-              stroke="#c9c9ec"
-              strokeOpacity={0.5}
-              strokeWidth="0.7"
-            />
-          </svg>
-          <span className="whitespace-nowrap">{node.label}</span>
-        </li>
-      ))}
+      {/* Source — a solid dot, matching the map. */}
+      <li className="flex items-center gap-2">
+        <svg width="12" height="10" viewBox="0 0 12 10" aria-hidden className="shrink-0">
+          <circle cx="6" cy="5" r={ENDPOINT_STYLE.source.r + 0.9} fill={ENDPOINT_STYLE.halo} fillOpacity={0.75} />
+          <circle
+            cx="6"
+            cy="5"
+            r={ENDPOINT_STYLE.source.r}
+            fill={ENDPOINT_STYLE.source.fill}
+            stroke="#fff"
+            strokeOpacity={0.85}
+            strokeWidth="0.7"
+          />
+        </svg>
+        <span className="whitespace-nowrap">Source</span>
+      </li>
+
+      {/* Destination — a ring, matching the map. */}
+      <li className="flex items-center gap-2">
+        <svg width="12" height="10" viewBox="0 0 12 10" aria-hidden className="shrink-0">
+          <circle
+            cx="6"
+            cy="5"
+            r={ENDPOINT_STYLE.destination.r + 0.4}
+            fill="#0b0b1c"
+            stroke={ENDPOINT_STYLE.destination.fill}
+            strokeOpacity={0.95}
+            strokeWidth="1.5"
+          />
+          <circle
+            cx="6"
+            cy="5"
+            r={Math.max(ENDPOINT_STYLE.destination.r - 1.6, 0.8)}
+            fill={ENDPOINT_STYLE.destination.fill}
+          />
+        </svg>
+        <span className="whitespace-nowrap">Destination</span>
+      </li>
+
+      {/* Device — parked at an endpoint and transferring. */}
+      <li className="flex items-center gap-2">
+        <svg width="14" height="10" viewBox="0 0 14 10" aria-hidden className="shrink-0">
+          <rect x="2" y="2" width="10" height="6" rx="1.4" fill="#0b1020" stroke={DEVICE_COLOR} strokeWidth="1.1" />
+          <rect x="3.6" y="4.2" width="6.8" height="1.6" rx="0.7" fill={DEVICE_COLOR} />
+        </svg>
+        <span className="whitespace-nowrap">Device (Transfer in Progress)</span>
+      </li>
     </ul>
   );
 }

@@ -116,7 +116,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
             <div className="flex items-center gap-2">
               <LiveDot tone={order.closed ? "muted" : "cyo"} />
               <HudLabel>
-                Transfer order · raised{" "}
+                Transfer order, raised{" "}
                 {format(parseISO(order.createdAt), "dd MMM yyyy")}
               </HudLabel>
             </div>
@@ -150,7 +150,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
               <span className="font-semibold tabular-nums">
                 {order.volumeTB.toLocaleString()} TB
               </span>
-              <span className="text-muted-foreground/50">·</span>
+              <span aria-hidden className="h-3 w-px bg-muted-foreground/30" />
               <span className="inline-flex items-center gap-2 font-medium">
                 {order.source.label}
                 <MoveRight className="size-3.5 text-(--plasma)" />
@@ -254,7 +254,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
               <span className="font-semibold text-foreground tabular-nums">
                 {written.toLocaleString()} TB
               </span>{" "}
-              of {order.volumeTB.toLocaleString()} TB written · live from the
+              of {order.volumeTB.toLocaleString()} TB written, live from the
               device
             </p>
           </div>
@@ -346,7 +346,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <p className="text-[13px] font-semibold">{ev.stage}</p>
                     <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground/70">
-                      {format(parseISO(ev.at), "dd MMM yyyy · HH:mm")}
+                      {format(parseISO(ev.at), "dd MMM yyyy, HH:mm")}
                     </p>
                   </div>
                   <p className="mt-0.5 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -360,7 +360,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
                     <span className="size-1.5 rounded-full bg-[#12102a]" />
                   </span>
                   <p className="text-[13px] font-semibold text-warning">
-                    {order.stage} — in progress
+                    {order.stage}, in progress
                   </p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">
                     {STAGE_BLURB[order.stage]}
@@ -378,7 +378,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
             <PanelHead
               label="Documents"
               title="Documents & certificates"
-              hint="Downloadable the moment they exist — never emailed as attachments."
+              hint="Downloadable the moment they exist, never emailed as attachments."
             />
             <ul className="mt-4 space-y-1.5">
               {order.documents.map((doc, i) => {
@@ -494,7 +494,7 @@ export function OrderDetailAdvanced({ displayId }: { displayId: string }) {
                 (rate card {order.estimate.ratesVersion})
                 {order.contractValue && (
                   <>
-                    {" · contracted "}
+                    {", contracted "}
                     <span className="font-semibold text-foreground">
                       {fmtUSD(order.contractValue)}
                     </span>
@@ -575,7 +575,7 @@ function EndpointPod({
         <div className="min-w-0 space-y-1 text-[12.5px]">
           <p className="font-semibold leading-tight">
             {endpoint.kind}
-            {endpoint.cloudProvider && ` · ${endpoint.cloudProvider}`}
+            {endpoint.cloudProvider && `, ${endpoint.cloudProvider}`}
           </p>
           <p className="leading-snug text-muted-foreground">
             {formatAddressLine(endpoint.location)}

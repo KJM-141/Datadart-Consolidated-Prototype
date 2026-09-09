@@ -1,9 +1,7 @@
 import {
   ArrowLeftRight,
   BookOpen,
-  Calculator,
   CalendarClock,
-  Inbox,
   LayoutDashboard,
   type LucideIcon,
   MessageSquare,
@@ -37,9 +35,17 @@ export const PATHS = {
   transfer: (id: string) => `/customer/history/${id}`,
   agreement: (id: string) => `/customer/agreement/${id}`,
   subscriptions: "/customer/subscriptions",
-  start: "/customer/start",
-  sizer: "/customer/sizer",
-  conversations: "/customer/conversations",
+
+  /* Studio — the single surface where you plan a transfer. New transfer and
+     Sizer are tabs on it; past conversations are its history. The three old
+     routes (start / sizer / conversations) now resolve here so every existing
+     link keeps working: `start` opens the New transfer tab, `sizer` opens the
+     Sizer tab, `conversations` opens with the history in view. */
+  studio: "/customer/studio",
+  start: "/customer/studio",
+  sizer: "/customer/studio?tab=sizer",
+  conversations: "/customer/studio?tab=history",
+
   hardware: "/customer/hardware",
   product: (slug: string) => `/customer/hardware/${slug}`,
   resources: "/customer/resources",
@@ -55,25 +61,31 @@ export interface NavItem {
   badge?: "cart";
 }
 
+export interface NavGroup {
+  label: string;
+  items: NavItem[];
+  /** A single-destination section rendered as one row, with no collapsible
+   *  header — used for Studio, which is a place you go, not a list you browse. */
+  standalone?: boolean;
+}
+
 /**
- * The rail's contents. Grouped because a flat list of nine destinations reads
- * as a pile; grouped, it reads as three jobs the console does.
+ * The rail's contents.
+ *
+ * `Workspace` and `Catalog` are collapsible groups (a heading you can fold
+ * away). `New Transfer` lives in the Workspace group and opens the one surface
+ * where you plan a move: New transfer, Sizer and the conversation history are
+ * all tabs on it, so the rail lists it once instead of spreading three rows
+ * across a separate "Pipeline" group.
  */
-export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
+export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Workspace",
     items: [
       { href: PATHS.dashboard, label: "Overview", icon: LayoutDashboard },
+      { href: PATHS.studio, label: "New Transfer", icon: MessageSquare },
       { href: PATHS.transfers, label: "Transfers", icon: ArrowLeftRight },
       { href: PATHS.subscriptions, label: "Subscriptions", icon: CalendarClock },
-    ],
-  },
-  {
-    label: "Pipeline",
-    items: [
-      { href: PATHS.start, label: "New transfer", icon: MessageSquare },
-      { href: PATHS.sizer, label: "Sizer", icon: Calculator },
-      { href: PATHS.conversations, label: "Conversations", icon: Inbox },
     ],
   },
   {

@@ -70,7 +70,7 @@ export function ProductsAdvanced() {
         description={
           subscribeMode
             ? "Select devices to rent month-to-month. Add them to your cart and raise a subscription with a shipping destination."
-            : "Petabyte-class capture, transport and edge AI — engineered by T|Second for the world's most demanding environments."
+            : "Petabyte-class capture, transport and edge AI, engineered by T|Second for the world's most demanding environments."
         }
         actions={
           <Link

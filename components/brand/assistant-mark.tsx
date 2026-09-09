@@ -132,7 +132,7 @@ export function AssistantIdentity({
           DataDart Assistant
         </span>
         <span className="block truncate text-[11px] text-muted-foreground">
-          {subtitle ?? "Scopes your transfer · priced instantly"}
+          {subtitle ?? "Scopes your transfer, priced instantly"}
         </span>
       </span>
     </span>

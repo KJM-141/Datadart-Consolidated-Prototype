@@ -57,7 +57,7 @@ export function StatStrip({
     {
       id: "progress" as const,
       label: focus ? focus.displayId : "In focus",
-      value: focus ? focus.stage : "—",
+      value: focus ? focus.stage : "N/A",
       sub: focus ? `Stage ${at + 1} of ${STAGES.length}` : "No active transfer",
       bar: focus ? (at + 1) / STAGES.length : undefined,
       live: Boolean(focus),
@@ -74,7 +74,7 @@ export function StatStrip({
     {
       id: "payload" as const,
       label: "In motion",
-      value: inMotion ? `${inMotion.toLocaleString()} TB` : "—",
+      value: inMotion ? `${inMotion.toLocaleString()} TB` : "N/A",
       sub: `across ${live.length} transfer${live.length === 1 ? "" : "s"}`,
     },
     {

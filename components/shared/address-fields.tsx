@@ -181,7 +181,7 @@ export function formatAddressLine(a: Address): string {
     .map((p) => p?.trim())
     .filter(Boolean)
     .join(", ");
-  return a.pincode?.trim() ? `${line} — ${a.pincode.trim()}` : line;
+  return a.pincode?.trim() ? `${line}, ${a.pincode.trim()}` : line;
 }
 
 export function validateAddress(

@@ -245,7 +245,7 @@ function JourneyCard({ order: o }: { order: TransferOrder }) {
               ? fmtUSD(due.amount)
               : o.estimate
                 ? fmtUSD(o.estimate.min)
-                : "—"
+                : "N/A"
           }
           tone={due ? "warn" : undefined}
         />
